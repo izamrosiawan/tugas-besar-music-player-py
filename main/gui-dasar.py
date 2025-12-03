@@ -2,7 +2,15 @@ import customtkinter as ctk
 from sistem import MusicPlayer
 
 ctk.set_appearance_mode("dark")
-ctk.set_default_color_theme("blue")
+ctk.set_default_color_theme("green")
+
+# Spotify Color Scheme
+SPOTIFY_BLACK = "#121212"
+SPOTIFY_DARK_GRAY = "#181818"
+SPOTIFY_GRAY = "#282828"
+SPOTIFY_GREEN = "#1DB954"
+SPOTIFY_WHITE = "#FFFFFF"
+SPOTIFY_LIGHT_GRAY = "#B3B3B3"
 
 class App(ctk.CTk):
     def __init__(self):
@@ -14,7 +22,8 @@ class App(ctk.CTk):
         album.add_song(2, "Lagu Kedua", "4:05")
         self.title("CIC Music Player")
         self.geometry("1100x650")
-        self.container = ctk.CTkFrame(self, fg_color="transparent")
+        self.configure(fg_color=SPOTIFY_BLACK)
+        self.container = ctk.CTkFrame(self, fg_color=SPOTIFY_BLACK)
         self.container.pack(fill="both", expand=True)
         self.frames = {}
         for F in (PageMenu, PageUser, PageAdmin):
@@ -28,61 +37,61 @@ class App(ctk.CTk):
 
 class PageMenu(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
-        ctk.CTkLabel(self, text="Selamat Datang di CIC Player", font=("Arial", 22, "bold")).pack(pady=50)
-        ctk.CTkButton(self, text="Masuk sebagai Pengguna", width=300, command=lambda: controller.show_frame(PageUser)).pack(pady=20)
-        ctk.CTkButton(self, text="Masuk sebagai Admin", width=300, command=lambda: controller.show_frame(PageAdmin)).pack(pady=20)
+        super().__init__(parent, fg_color=SPOTIFY_BLACK)
+        ctk.CTkLabel(self, text="Selamat Datang di CIC Player", font=("Arial", 22, "bold"), text_color=SPOTIFY_WHITE).pack(pady=50)
+        ctk.CTkButton(self, text="Masuk sebagai Pengguna", width=300, height=40, command=lambda: controller.show_frame(PageUser), fg_color=SPOTIFY_GREEN, hover_color="#1ed760", text_color=SPOTIFY_WHITE).pack(pady=20)
+        ctk.CTkButton(self, text="Masuk sebagai Admin", width=300, height=40, command=lambda: controller.show_frame(PageAdmin), fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E", text_color=SPOTIFY_WHITE).pack(pady=20)
 
 class PageUser(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
-        ctk.CTkButton(self, text="Kembali", width=100, command=lambda: controller.show_frame(PageMenu)).place(x=10, y=10)
+        super().__init__(parent, fg_color=SPOTIFY_BLACK)
+        ctk.CTkButton(self, text="Kembali", width=100, command=lambda: controller.show_frame(PageMenu), fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E").place(x=10, y=10)
 
-        search_frame = ctk.CTkFrame(self, width=340, height=40, corner_radius=10)
+        search_frame = ctk.CTkFrame(self, width=340, height=40, corner_radius=10, fg_color=SPOTIFY_DARK_GRAY)
         search_frame.place(x=360, y=10)
-        ctk.CTkLabel(search_frame, text="Cari:", font=("Arial", 12)).place(x=10, y=8)
-        self.search_entry = ctk.CTkEntry(search_frame, width=220, placeholder_text="Cari judul/artis...")
+        ctk.CTkLabel(search_frame, text="Cari:", font=("Arial", 12), text_color=SPOTIFY_WHITE).place(x=10, y=8)
+        self.search_entry = ctk.CTkEntry(search_frame, width=220, placeholder_text="Cari judul/artis...", fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE)
         self.search_entry.place(x=50, y=8)
         self.search_entry.bind("<Return>", lambda e: self.search_songs(controller))
-        ctk.CTkButton(search_frame, text="🔍", width=40, command=lambda: self.search_songs(controller)).place(x=280, y=8)
+        ctk.CTkButton(search_frame, text="🔍", width=40, command=lambda: self.search_songs(controller), fg_color=SPOTIFY_GREEN, hover_color="#1ed760").place(x=280, y=8)
 
-        self.frame_playlist = ctk.CTkFrame(self, width=340, height=500, corner_radius=10)
+        self.frame_playlist = ctk.CTkFrame(self, width=340, height=500, corner_radius=10, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_playlist.place(x=10, y=60)
-        ctk.CTkLabel(self.frame_playlist, text="Playlist", font=("Arial", 14, "bold")).place(x=10, y=10)
-        self.playlist_box = ctk.CTkTextbox(self.frame_playlist, width=320, height=440)
+        ctk.CTkLabel(self.frame_playlist, text="Playlist", font=("Arial", 14, "bold"), text_color=SPOTIFY_WHITE).place(x=10, y=10)
+        self.playlist_box = ctk.CTkTextbox(self.frame_playlist, width=320, height=440, fg_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE, border_color=SPOTIFY_GRAY)
         self.playlist_box.place(x=10, y=50)
         self.playlist_box.configure(state="disabled")
 
-        self.frame_library = ctk.CTkFrame(self, width=340, height=500, corner_radius=10)
+        self.frame_library = ctk.CTkFrame(self, width=340, height=500, corner_radius=10, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_library.place(x=360, y=60)
-        ctk.CTkLabel(self.frame_library, text="Daftar Lagu", font=("Arial", 14, "bold")).place(x=10, y=10)
-        self.library_box = ctk.CTkTextbox(self.frame_library, width=320, height=440)
+        ctk.CTkLabel(self.frame_library, text="Daftar Lagu", font=("Arial", 14, "bold"), text_color=SPOTIFY_WHITE).place(x=10, y=10)
+        self.library_box = ctk.CTkTextbox(self.frame_library, width=320, height=440, fg_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE, border_color=SPOTIFY_GRAY)
         self.library_box.place(x=10, y=50)
         self.library_items = []
         self.selected_index = None
         self.refresh_library(controller)
 
-        self.frame_playlist_action = ctk.CTkFrame(self, width=340, height=500, corner_radius=10)
+        self.frame_playlist_action = ctk.CTkFrame(self, width=340, height=500, corner_radius=10, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_playlist_action.place(x=710, y=60)
-        ctk.CTkLabel(self.frame_playlist_action, text="Kelola Playlist", font=("Arial", 14, "bold")).place(x=10, y=10)
-        ctk.CTkLabel(self.frame_playlist_action, text="Masukkan ID Lagu:").place(x=10, y=50)
-        self.song_id_entry = ctk.CTkEntry(self.frame_playlist_action, width=200, placeholder_text="Contoh: 1")
+        ctk.CTkLabel(self.frame_playlist_action, text="Kelola Playlist", font=("Arial", 14, "bold"), text_color=SPOTIFY_WHITE).place(x=10, y=10)
+        ctk.CTkLabel(self.frame_playlist_action, text="Masukkan ID Lagu:", text_color=SPOTIFY_LIGHT_GRAY).place(x=10, y=50)
+        self.song_id_entry = ctk.CTkEntry(self.frame_playlist_action, width=200, placeholder_text="Contoh: 1", fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE)
         self.song_id_entry.place(x=10, y=80)
-        ctk.CTkButton(self.frame_playlist_action, text="Tambah ke Playlist", command=lambda: self.add_to_playlist(controller), width=200).place(x=10, y=120)
-        ctk.CTkButton(self.frame_playlist_action, text="Hapus dari Playlist", command=lambda: self.remove_from_playlist(controller), width=200).place(x=10, y=160)
-        ctk.CTkButton(self.frame_playlist_action, text="Kosongkan Playlist", command=lambda: self.clear_playlist(controller), width=200).place(x=10, y=200)
-        self.status_label = ctk.CTkLabel(self.frame_playlist_action, text="", text_color="green")
+        ctk.CTkButton(self.frame_playlist_action, text="Tambah ke Playlist", command=lambda: self.add_to_playlist(controller), width=200, fg_color=SPOTIFY_GREEN, hover_color="#1ed760").place(x=10, y=120)
+        ctk.CTkButton(self.frame_playlist_action, text="Hapus dari Playlist", command=lambda: self.remove_from_playlist(controller), width=200, fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E").place(x=10, y=160)
+        ctk.CTkButton(self.frame_playlist_action, text="Kosongkan Playlist", command=lambda: self.clear_playlist(controller), width=200, fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E").place(x=10, y=200)
+        self.status_label = ctk.CTkLabel(self.frame_playlist_action, text="", text_color=SPOTIFY_GREEN)
         self.status_label.place(x=10, y=250)
 
-        self.frame_control = ctk.CTkFrame(self, width=1070, height=70)
+        self.frame_control = ctk.CTkFrame(self, width=1070, height=70, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_control.place(x=10, y=570)
-        self.current_label = ctk.CTkLabel(self.frame_control, text="Lagu yang sedang diputar:")
+        self.current_label = ctk.CTkLabel(self.frame_control, text="Lagu yang sedang diputar:", text_color=SPOTIFY_WHITE)
         self.current_label.place(relx=0.5, y=5, anchor="n")
-        control_btns = ctk.CTkFrame(self.frame_control, fg_color="transparent")
+        control_btns = ctk.CTkFrame(self.frame_control, fg_color=SPOTIFY_DARK_GRAY)
         control_btns.place(relx=0.5, y=35, anchor="n")
-        ctk.CTkButton(control_btns, text="Putar", width=140, command=lambda: self.play_selected(controller)).grid(row=0, column=0, padx=15)
-        ctk.CTkButton(control_btns, text="Berikutnya", width=140, command=lambda: self.next_song(controller)).grid(row=0, column=1, padx=15)
-        ctk.CTkButton(control_btns, text="Sebelumnya", width=140, command=lambda: self.previous_song(controller)).grid(row=0, column=2, padx=15)
+        ctk.CTkButton(control_btns, text="Putar", width=140, command=lambda: self.play_selected(controller), fg_color=SPOTIFY_GREEN, hover_color="#1ed760").grid(row=0, column=0, padx=15)
+        ctk.CTkButton(control_btns, text="Berikutnya", width=140, command=lambda: self.next_song(controller), fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E").grid(row=0, column=1, padx=15)
+        ctk.CTkButton(control_btns, text="Sebelumnya", width=140, command=lambda: self.previous_song(controller), fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E").grid(row=0, column=2, padx=15)
 
     def refresh_library(self, controller):
         self.library_box.configure(state="normal")
@@ -144,11 +153,11 @@ class PageUser(ctk.CTkFrame):
     def add_to_playlist(self, controller):
         song_id_str = self.song_id_entry.get().strip()
         if not song_id_str:
-            return self.status_label.configure(text="Masukkan ID lagu!", text_color="red")
+            return self.status_label.configure(text="Masukkan ID lagu!", text_color="#FF6B6B")
         try:
             song_id = int(song_id_str)
         except ValueError:
-            return self.status_label.configure(text="ID harus angka!", text_color="red")
+            return self.status_label.configure(text="ID harus angka!", text_color="#FF6B6B")
         
         found_song = None
         art = controller.player.library.artists_head
@@ -167,23 +176,23 @@ class PageUser(ctk.CTkFrame):
         if found_song:
             controller.player.playlist.add_song(found_song)
             self.refresh_playlist(controller)
-            self.status_label.configure(text=f"'{found_song.title}' ditambahkan!", text_color="green")
+            self.status_label.configure(text=f"'{found_song.title}' ditambahkan!", text_color=SPOTIFY_GREEN)
             self.song_id_entry.delete(0, 'end')
         else:
-            self.status_label.configure(text=f"Lagu ID {song_id} tidak ditemukan!", text_color="red")
+            self.status_label.configure(text=f"Lagu ID {song_id} tidak ditemukan!", text_color="#FF6B6B")
 
     def remove_from_playlist(self, controller):
         song_id_str = self.song_id_entry.get().strip()
         if not song_id_str:
-            return self.status_label.configure(text="Masukkan ID lagu yang ingin dihapus!", text_color="red")
+            return self.status_label.configure(text="Masukkan ID lagu yang ingin dihapus!", text_color="#FF6B6B")
         try:
             song_id = int(song_id_str)
         except ValueError:
-            return self.status_label.configure(text="ID harus angka!", text_color="red")
+            return self.status_label.configure(text="ID harus angka!", text_color="#FF6B6B")
         
         playlist = controller.player.playlist
         if not playlist.head:
-            return self.status_label.configure(text="Playlist kosong!", text_color="red")
+            return self.status_label.configure(text="Playlist kosong!", text_color="#FF6B6B")
         
         if str(playlist.head.song.id) == str(song_id):
             if playlist.head == playlist.tail:
@@ -193,7 +202,7 @@ class PageUser(ctk.CTkFrame):
                 if playlist.head:
                     playlist.head.prev = None
             self.refresh_playlist(controller)
-            self.status_label.configure(text=f"Lagu ID {song_id} dihapus dari playlist!", text_color="green")
+            self.status_label.configure(text=f"Lagu ID {song_id} dihapus dari playlist!", text_color=SPOTIFY_GREEN)
             self.song_id_entry.delete(0, 'end')
             return
         
@@ -207,17 +216,17 @@ class PageUser(ctk.CTkFrame):
                 if curr == playlist.tail:
                     playlist.tail = curr.prev
                 self.refresh_playlist(controller)
-                self.status_label.configure(text=f"Lagu ID {song_id} dihapus dari playlist!", text_color="green")
+                self.status_label.configure(text=f"Lagu ID {song_id} dihapus dari playlist!", text_color=SPOTIFY_GREEN)
                 self.song_id_entry.delete(0, 'end')
                 return
             curr = curr.next
-        self.status_label.configure(text=f"Lagu ID {song_id} tidak ada di playlist!", text_color="red")
+        self.status_label.configure(text=f"Lagu ID {song_id} tidak ada di playlist!", text_color="#FF6B6B")
 
     def clear_playlist(self, controller):
         controller.player.playlist.head = None
         controller.player.playlist.tail = None
         self.refresh_playlist(controller)
-        self.status_label.configure(text="Playlist dikosongkan!", text_color="green")
+        self.status_label.configure(text="Playlist dikosongkan!", text_color=SPOTIFY_GREEN)
 
     def refresh_playlist(self, controller):
         self.playlist_box.configure(state="normal")
@@ -248,48 +257,48 @@ class PageUser(ctk.CTkFrame):
 
 class PageAdmin(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        super().__init__(parent)
-        ctk.CTkButton(self, text="Kembali", width=100, command=lambda: controller.show_frame(PageMenu)).place(x=10, y=10)
+        super().__init__(parent, fg_color=SPOTIFY_BLACK)
+        ctk.CTkButton(self, text="Kembali", width=100, command=lambda: controller.show_frame(PageMenu), fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E").place(x=10, y=10)
 
-        self.frame_library = ctk.CTkFrame(self, width=520, height=500, corner_radius=10)
+        self.frame_library = ctk.CTkFrame(self, width=520, height=500, corner_radius=10, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_library.place(x=10, y=60)
-        ctk.CTkLabel(self.frame_library, text="Library Lagu", font=("Arial", 14, "bold")).place(x=10, y=10)
-        self.admin_library_box = ctk.CTkTextbox(self.frame_library, width=500, height=440)
+        ctk.CTkLabel(self.frame_library, text="Library Lagu", font=("Arial", 14, "bold"), text_color=SPOTIFY_WHITE).place(x=10, y=10)
+        self.admin_library_box = ctk.CTkTextbox(self.frame_library, width=500, height=440, fg_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE, border_color=SPOTIFY_GRAY)
         self.admin_library_box.place(x=10, y=50)
         self.refresh_admin_library(controller)
 
-        self.frame_detail = ctk.CTkFrame(self, width=520, height=500, corner_radius=10)
+        self.frame_detail = ctk.CTkFrame(self, width=520, height=500, corner_radius=10, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_detail.place(x=540, y=60)
-        ctk.CTkLabel(self.frame_detail, text="Form Tambah Lagu", font=("Arial", 14, "bold")).place(x=10, y=10)
-        ctk.CTkLabel(self.frame_detail, text="Artis:").place(x=10, y=50)
-        self.artist_entry = ctk.CTkEntry(self.frame_detail, width=480)
+        ctk.CTkLabel(self.frame_detail, text="Form Tambah Lagu", font=("Arial", 14, "bold"), text_color=SPOTIFY_WHITE).place(x=10, y=10)
+        ctk.CTkLabel(self.frame_detail, text="Artis:", text_color=SPOTIFY_LIGHT_GRAY).place(x=10, y=50)
+        self.artist_entry = ctk.CTkEntry(self.frame_detail, width=480, fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE)
         self.artist_entry.place(x=10, y=75)
-        ctk.CTkLabel(self.frame_detail, text="Album:").place(x=10, y=110)
-        self.album_entry = ctk.CTkEntry(self.frame_detail, width=480)
+        ctk.CTkLabel(self.frame_detail, text="Album:", text_color=SPOTIFY_LIGHT_GRAY).place(x=10, y=110)
+        self.album_entry = ctk.CTkEntry(self.frame_detail, width=480, fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE)
         self.album_entry.place(x=10, y=135)
-        ctk.CTkLabel(self.frame_detail, text="ID (opsional):").place(x=10, y=170)
-        self.id_entry = ctk.CTkEntry(self.frame_detail, width=200)
+        ctk.CTkLabel(self.frame_detail, text="ID (opsional):", text_color=SPOTIFY_LIGHT_GRAY).place(x=10, y=170)
+        self.id_entry = ctk.CTkEntry(self.frame_detail, width=200, fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE)
         self.id_entry.place(x=10, y=195)
-        ctk.CTkLabel(self.frame_detail, text="Judul Lagu:").place(x=10, y=230)
-        self.title_entry = ctk.CTkEntry(self.frame_detail, width=480)
+        ctk.CTkLabel(self.frame_detail, text="Judul Lagu:", text_color=SPOTIFY_LIGHT_GRAY).place(x=10, y=230)
+        self.title_entry = ctk.CTkEntry(self.frame_detail, width=480, fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE)
         self.title_entry.place(x=10, y=255)
-        ctk.CTkLabel(self.frame_detail, text="Durasi (mm:ss):").place(x=10, y=290)
-        self.duration_entry = ctk.CTkEntry(self.frame_detail, width=200)
+        ctk.CTkLabel(self.frame_detail, text="Durasi (mm:ss):", text_color=SPOTIFY_LIGHT_GRAY).place(x=10, y=290)
+        self.duration_entry = ctk.CTkEntry(self.frame_detail, width=200, fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, text_color=SPOTIFY_WHITE)
         self.duration_entry.place(x=10, y=315)
-        self.error_label = ctk.CTkLabel(self.frame_detail, text="", text_color="red")
+        self.error_label = ctk.CTkLabel(self.frame_detail, text="", text_color="#FF6B6B")
         self.error_label.place(x=10, y=350)
-        ctk.CTkButton(self.frame_detail, text="Simpan Lagu", command=lambda: self.save_song_from_form(controller), width=280).place(x=10, y=390)
+        ctk.CTkButton(self.frame_detail, text="Simpan Lagu", command=lambda: self.save_song_from_form(controller), width=280, fg_color=SPOTIFY_GREEN, hover_color="#1ed760").place(x=10, y=390)
         self.form_mode = "add"
         self.current_edit_song = None
 
-        self.frame_control = ctk.CTkFrame(self, width=1070, height=70)
+        self.frame_control = ctk.CTkFrame(self, width=1070, height=70, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_control.place(x=10, y=570)
-        ctk.CTkLabel(self.frame_control, text="Panel Aksi Admin").place(relx=0.5, y=5, anchor="n")
-        button_frame = ctk.CTkFrame(self.frame_control, fg_color="transparent")
+        ctk.CTkLabel(self.frame_control, text="Panel Aksi Admin", text_color=SPOTIFY_WHITE).place(relx=0.5, y=5, anchor="n")
+        button_frame = ctk.CTkFrame(self.frame_control, fg_color=SPOTIFY_DARK_GRAY)
         button_frame.place(relx=0.5, y=35, anchor="n")
-        ctk.CTkButton(button_frame, text="Simpan", width=140, command=lambda: self.save_song_from_form(controller)).grid(row=0, column=0, padx=15)
-        ctk.CTkButton(button_frame, text="Perbarui", width=140, command=lambda: self.update_song(controller)).grid(row=0, column=1, padx=15)
-        ctk.CTkButton(button_frame, text="Hapus", width=140, command=lambda: self.delete_song(controller)).grid(row=0, column=2, padx=15)
+        ctk.CTkButton(button_frame, text="Simpan", width=140, command=lambda: self.save_song_from_form(controller), fg_color=SPOTIFY_GREEN, hover_color="#1ed760").grid(row=0, column=0, padx=15)
+        ctk.CTkButton(button_frame, text="Perbarui", width=140, command=lambda: self.update_song(controller), fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E").grid(row=0, column=1, padx=15)
+        ctk.CTkButton(button_frame, text="Hapus", width=140, command=lambda: self.delete_song(controller), fg_color="#8B0000", hover_color="#A52A2A").grid(row=0, column=2, padx=15)
 
     def refresh_admin_library(self, controller):
         self.admin_library_box.configure(state="normal")
@@ -372,16 +381,16 @@ class PageAdmin(ctk.CTkFrame):
         controller.frames[PageUser].refresh_library(controller)
         self.refresh_admin_library(controller)
         self.clear_form()
-        self.error_label.configure(text="Lagu berhasil ditambahkan!", text_color="green")
+        self.error_label.configure(text="Lagu berhasil ditambahkan!", text_color=SPOTIFY_GREEN)
 
     def delete_song(self, controller):
         song_id_str = self.id_entry.get().strip()
         if not song_id_str:
-            return self.error_label.configure(text="Masukkan ID lagu yang ingin dihapus!", text_color="red")
+            return self.error_label.configure(text="Masukkan ID lagu yang ingin dihapus!", text_color="#FF6B6B")
         try:
             song_id = int(song_id_str)
         except ValueError:
-            return self.error_label.configure(text="ID harus berupa angka!", text_color="red")
+            return self.error_label.configure(text="ID harus berupa angka!", text_color="#FF6B6B")
         
         lib, found = controller.player.library, False
         art = lib.artists_head
@@ -408,23 +417,23 @@ class PageAdmin(ctk.CTkFrame):
             controller.frames[PageUser].refresh_library(controller)
             self.refresh_admin_library(controller)
             self.clear_form()
-            self.error_label.configure(text=f"Lagu ID {song_id} berhasil dihapus!", text_color="green")
+            self.error_label.configure(text=f"Lagu ID {song_id} berhasil dihapus!", text_color=SPOTIFY_GREEN)
         else:
-            self.error_label.configure(text=f"Lagu dengan ID {song_id} tidak ditemukan!", text_color="red")
+            self.error_label.configure(text=f"Lagu dengan ID {song_id} tidak ditemukan!", text_color="#FF6B6B")
 
     def update_song(self, controller):
         song_id_str = self.id_entry.get().strip()
         if not song_id_str:
-            return self.error_label.configure(text="Masukkan ID lagu yang ingin diperbarui!", text_color="red")
+            return self.error_label.configure(text="Masukkan ID lagu yang ingin diperbarui!", text_color="#FF6B6B")
         title, duration = self.title_entry.get().strip(), self.duration_entry.get().strip()
         if not title:
-            return self.error_label.configure(text="Judul lagu wajib diisi!", text_color="red")
+            return self.error_label.configure(text="Judul lagu wajib diisi!", text_color="#FF6B6B")
         if not duration:
-            return self.error_label.configure(text="Durasi wajib diisi!", text_color="red")
+            return self.error_label.configure(text="Durasi wajib diisi!", text_color="#FF6B6B")
         try:
             song_id = int(song_id_str)
         except ValueError:
-            return self.error_label.configure(text="ID harus berupa angka!", text_color="red")
+            return self.error_label.configure(text="ID harus berupa angka!", text_color="#FF6B6B")
         
         lib, found = controller.player.library, False
         art = lib.artists_head
@@ -444,9 +453,9 @@ class PageAdmin(ctk.CTkFrame):
             controller.frames[PageUser].refresh_library(controller)
             self.refresh_admin_library(controller)
             self.clear_form()
-            self.error_label.configure(text=f"Lagu ID {song_id} berhasil diperbarui!", text_color="green")
+            self.error_label.configure(text=f"Lagu ID {song_id} berhasil diperbarui!", text_color=SPOTIFY_GREEN)
         else:
-            self.error_label.configure(text=f"Lagu dengan ID {song_id} tidak ditemukan!", text_color="red")
+            self.error_label.configure(text=f"Lagu dengan ID {song_id} tidak ditemukan!", text_color="#FF6B6B")
 
 app = App()
 app.mainloop()
