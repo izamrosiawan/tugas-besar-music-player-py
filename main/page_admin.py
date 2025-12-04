@@ -37,8 +37,8 @@ class PageAdmin(ctk.CTkFrame):
                     text_color=SPOTIFY_WHITE).pack(side="left", padx=15, pady=10)
         
         self.admin_library_box = ctk.CTkTextbox(self.frame_library, fg_color=SPOTIFY_GRAY, 
-                                               text_color=SPOTIFY_WHITE, border_color=SPOTIFY_DARK_GRAY,
-                                               corner_radius=10, font=("Consolas", 11))
+                                            text_color=SPOTIFY_WHITE, border_color=SPOTIFY_DARK_GRAY,
+                                            corner_radius=10, font=("Consolas", 11))
         self.admin_library_box.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         self.refresh_admin_library(controller)
 
@@ -65,8 +65,8 @@ class PageAdmin(ctk.CTkFrame):
         ctk.CTkLabel(form_content, text="Album:", font=("Arial", 12, "bold"), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
         self.album_entry = ctk.CTkEntry(form_content, height=35, corner_radius=10,
-                                       fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
-                                       text_color=SPOTIFY_WHITE, placeholder_text="Nama album...")
+                                    fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
+                                    text_color=SPOTIFY_WHITE, placeholder_text="Nama album...")
         self.album_entry.pack(fill="x", pady=(0, 10))
         
         row1 = ctk.CTkFrame(form_content, fg_color="transparent")
@@ -77,8 +77,8 @@ class PageAdmin(ctk.CTkFrame):
         ctk.CTkLabel(id_frame, text="ID (opsional):", font=("Arial", 12, "bold"), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
         self.id_entry = ctk.CTkEntry(id_frame, height=35, corner_radius=10,
-                                     fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
-                                     text_color=SPOTIFY_WHITE, placeholder_text="Auto...")
+                                    fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
+                                    text_color=SPOTIFY_WHITE, placeholder_text="Auto...")
         self.id_entry.pack(fill="x")
         
         duration_frame = ctk.CTkFrame(row1, fg_color="transparent")
@@ -86,19 +86,19 @@ class PageAdmin(ctk.CTkFrame):
         ctk.CTkLabel(duration_frame, text="Durasi:", font=("Arial", 12, "bold"), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
         self.duration_entry = ctk.CTkEntry(duration_frame, height=35, corner_radius=10,
-                                          fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
-                                          text_color=SPOTIFY_WHITE, placeholder_text="mm:ss")
+                                        fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
+                                        text_color=SPOTIFY_WHITE, placeholder_text="mm:ss")
         self.duration_entry.pack(fill="x")
         
         ctk.CTkLabel(form_content, text="Judul Lagu:", font=("Arial", 12, "bold"), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
         self.title_entry = ctk.CTkEntry(form_content, height=35, corner_radius=10,
-                                       fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
-                                       text_color=SPOTIFY_WHITE, placeholder_text="Judul lagu...")
+                                    fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
+                                    text_color=SPOTIFY_WHITE, placeholder_text="Judul lagu...")
         self.title_entry.pack(fill="x", pady=(0, 10))
         
         self.error_label = ctk.CTkLabel(form_content, text="", font=("Arial", 11, "bold"),
-                                       text_color="#FF6B6B", wraplength=500)
+                                    text_color="#FF6B6B", wraplength=500)
         self.error_label.pack(pady=10)
         
         # Action buttons
@@ -106,19 +106,19 @@ class PageAdmin(ctk.CTkFrame):
         btn_frame.pack(fill="x", pady=10)
         
         ctk.CTkButton(btn_frame, text="💾 Simpan", height=45, corner_radius=10,
-                     command=lambda: self.save_song_from_form(controller), 
-                     fg_color=SPOTIFY_GREEN, hover_color="#1ed760",
-                     font=("Arial", 14, "bold")).pack(side="left", fill="x", expand=True, padx=(0, 5))
+                    command=lambda: self.save_song_from_form(controller), 
+                    fg_color=SPOTIFY_GREEN, hover_color="#1ed760",
+                    font=("Arial", 14, "bold")).pack(side="left", fill="x", expand=True, padx=(0, 5))
         
         ctk.CTkButton(btn_frame, text="✏️ Perbarui", height=45, corner_radius=10,
-                     command=lambda: self.update_song(controller), 
-                     fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E",
-                     font=("Arial", 14, "bold")).pack(side="left", fill="x", expand=True, padx=5)
+                    command=lambda: self.update_song(controller), 
+                    fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E",
+                    font=("Arial", 14, "bold")).pack(side="left", fill="x", expand=True, padx=5)
         
         ctk.CTkButton(btn_frame, text="🗑️ Hapus", height=45, corner_radius=10,
-                     command=lambda: self.delete_song(controller), 
-                     fg_color="#8B0000", hover_color="#A52A2A",
-                     font=("Arial", 14, "bold")).pack(side="left", fill="x", expand=True, padx=(5, 0))
+                    command=lambda: self.delete_song(controller), 
+                    fg_color="#8B0000", hover_color="#A52A2A",
+                    font=("Arial", 14, "bold")).pack(side="left", fill="x", expand=True, padx=(5, 0))
         
         self.form_mode = "add"
         self.current_edit_song = None
@@ -133,7 +133,7 @@ class PageAdmin(ctk.CTkFrame):
                 song = alb.songs_head
                 while song:
                     text = (f"{song.id}. {song.title} — {song.duration} "
-                           f"({art.artist_name} / {alb.album_name})\n")
+                        f"({art.artist_name} / {alb.album_name})\n")
                     self.admin_library_box.insert("end", text)
                     song = song.next
                 alb = alb.next

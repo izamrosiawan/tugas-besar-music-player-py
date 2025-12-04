@@ -29,15 +29,15 @@ class PageMenu(ctk.CTkFrame):
         button_frame.pack(pady=40)
         
         ctk.CTkButton(button_frame, text="🎧 Masuk sebagai Pengguna", 
-                     width=350, height=50, 
-                     font=("Arial", 16, "bold"), corner_radius=25,
-                     command=lambda: controller.show_frame("PageUser"), 
-                     fg_color=SPOTIFY_GREEN, hover_color="#1ed760", 
-                     text_color=SPOTIFY_WHITE).pack(pady=15)
+                    width=350, height=50, 
+                    font=("Arial", 16, "bold"), corner_radius=25,
+                    command=lambda: controller.show_frame("PageUser"), 
+                    fg_color=SPOTIFY_GREEN, hover_color="#1ed760", 
+                    text_color=SPOTIFY_WHITE).pack(pady=15)
         
         ctk.CTkButton(button_frame, text="⚙️ Masuk sebagai Admin", 
-                     width=350, height=50,
-                     font=("Arial", 16, "bold"), corner_radius=25,
-                     command=lambda: controller.show_frame("PageAdmin"), 
-                     fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E", 
-                     text_color=SPOTIFY_WHITE).pack(pady=15)
+                    width=350, height=50,
+                    font=("Arial", 16, "bold"), corner_radius=25,
+                    command=lambda: controller.show_frame("PageAdmin"), 
+                    fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E", 
+                    text_color=SPOTIFY_WHITE).pack(pady=15)

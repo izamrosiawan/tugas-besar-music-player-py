@@ -167,7 +167,7 @@ class PageUser(ctk.CTkFrame):
                 song = alb.songs_head
                 while song:
                     text = (f"{song.id}. {song.title} — {song.duration} "
-                           f"({art.artist_name} / {alb.album_name})\n")
+                        f"({art.artist_name} / {alb.album_name})\n")
                     self.library_box.insert("end", text)
                     self.library_items.append(song)
                     song = song.next
@@ -196,7 +196,7 @@ class PageUser(ctk.CTkFrame):
                         keyword in art.artist_name.lower() or 
                         keyword in alb.album_name.lower()):
                         text = (f"{song.id}. {song.title} — {song.duration} "
-                               f"({art.artist_name} / {alb.album_name})\n")
+                            f"({art.artist_name} / {alb.album_name})\n")
                         self.library_box.insert("end", text)
                         self.library_items.append(song)
                         found_count += 1
