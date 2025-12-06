@@ -128,33 +128,13 @@ class PageUser(ctk.CTkFrame):
         self.status_label.pack(pady=15)
 
         # Bottom: Player Controls (Fixed at bottom)
-        self.frame_control = ctk.CTkFrame(self, height=140, fg_color=SPOTIFY_DARK_GRAY, corner_radius=0)
+        self.frame_control = ctk.CTkFrame(self, height=120, fg_color=SPOTIFY_DARK_GRAY, corner_radius=0)
         self.frame_control.pack(side="bottom", fill="x", padx=0, pady=0)
         
         # Now Playing Label
         self.current_label = ctk.CTkLabel(self.frame_control, text="▶️ Tidak ada lagu yang diputar", 
                                         font=("Arial", 13, "bold"), text_color=SPOTIFY_WHITE)
-        self.current_label.pack(pady=(10, 5))
-        
-        # Seekbar with time labels
-        seekbar_frame = ctk.CTkFrame(self.frame_control, fg_color="transparent")
-        seekbar_frame.pack(fill="x", padx=20, pady=(0, 5))
-        
-        self.time_current = ctk.CTkLabel(seekbar_frame, text="0:00", font=("Arial", 10),
-                                        text_color=SPOTIFY_LIGHT_GRAY)
-        self.time_current.pack(side="left", padx=5)
-        
-        self.seekbar = ctk.CTkSlider(seekbar_frame, from_=0, to=100, 
-                                    fg_color=SPOTIFY_GRAY, progress_color=SPOTIFY_GREEN,
-                                    button_color=SPOTIFY_GREEN, button_hover_color="#1ed760")
-        self.seekbar.pack(side="left", fill="x", expand=True, padx=5)
-        self.seekbar.set(0)
-        self.seekbar.bind("<ButtonRelease-1>", lambda e: self.on_seekbar_click(controller, e))
-        self.seeking = False
-        
-        self.time_total = ctk.CTkLabel(seekbar_frame, text="0:00", font=("Arial", 10),
-                                      text_color=SPOTIFY_LIGHT_GRAY)
-        self.time_total.pack(side="left", padx=5)
+        self.current_label.pack(pady=(15, 10))
         
         # Control Buttons (Spotify Style)
         control_btns = ctk.CTkFrame(self.frame_control, fg_color="transparent")
@@ -209,41 +189,26 @@ class PageUser(ctk.CTkFrame):
         self.volume_slider.pack(side="left", padx=5)
         
         self.controller = controller
+        self.check_song_ended()
 
     def check_song_ended(self):
         import pygame
         try:
             for event in pygame.event.get():
                 if event.type == pygame.USEREVENT:
+                    print("[AUTO-PLAY] USEREVENT triggered")
                     self.next_song(self.controller)
+                    return
             
-            if self.controller.player.is_playing and self.controller.player.current_song:
-                if pygame.mixer.music.get_busy():
-                    current_pos = pygame.mixer.music.get_pos() / 1000.0
-                    duration_str = self.controller.player.current_song.duration
-                    try:
-                        parts = duration_str.split(":")
-                        if len(parts) == 2:
-                            total_seconds = int(parts[0]) * 60 + int(parts[1])
-                        else:
-                            total_seconds = 180
-                        
-                        if total_seconds > 0 and current_pos >= 0:
-                            progress = (current_pos / total_seconds) * 100
-                            if not self.seeking:
-                                self.seekbar.set(min(progress, 100))
-                        
-                        mins_curr = int(current_pos // 60)
-                        secs_curr = int(current_pos % 60)
-                        self.time_current.configure(text=f"{mins_curr}:{secs_curr:02d}")
-                        
-                        mins_total = int(total_seconds // 60)
-                        secs_total = int(total_seconds % 60)
-                        self.time_total.configure(text=f"{mins_total}:{secs_total:02d}")
-                    except:
-                        pass
-        except:
-            pass
+            if self.controller.player.current_song and self.controller.player.is_playing:
+                if not pygame.mixer.music.get_busy():
+                    print("[AUTO-PLAY] Music ended (get_busy=False), playing next...")
+                    self.controller.player.is_playing = False
+                    self.next_song(self.controller)
+                    return
+        except Exception as e:
+            print(f"[ERROR] check_song_ended: {e}")
+        
         self.after(100, self.check_song_ended)
 
     def on_library_click(self, controller, event):
@@ -261,7 +226,6 @@ class PageUser(ctk.CTkFrame):
                 
                 msg = controller.player.play_song(song, callback=update_status)
                 self.current_label.configure(text=f"⏳ {song.title}")
-                self.seekbar.set(0)
                 self.is_playing_state = True
                 self.play_pause_btn.configure(text="⏸")
         except:
@@ -333,7 +297,6 @@ class PageUser(ctk.CTkFrame):
             
             msg = controller.player.play_song(song, callback=update_status)
             self.current_label.configure(text=f"⏳ {song.title}")
-            self.seekbar.set(0)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
     
@@ -482,9 +445,9 @@ class PageUser(ctk.CTkFrame):
             
             msg = controller.player.play_song(song, callback=update_status)
             self.current_label.configure(text=f"⏳ {song.title}")
-            self.seekbar.set(0)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
+            print(f"[NEXT] Playing: {song.title}")
 
     def previous_song(self, controller):
         if self.selected_index is None: 
@@ -501,9 +464,9 @@ class PageUser(ctk.CTkFrame):
             
             msg = controller.player.play_song(song, callback=update_status)
             self.current_label.configure(text=f"⏳ {song.title}")
-            self.seekbar.set(0)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
+            print(f"[PREV] Playing: {song.title}")
 
     def create_new_playlist(self, controller):
         from tkinter import simpledialog

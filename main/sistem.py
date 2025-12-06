@@ -5,6 +5,7 @@ import tempfile
 import threading
 
 pygame.mixer.init()
+pygame.init()
 
 class SongNode:
     def __init__(self, id, title, duration, file_path=None, genre="Unknown"):
@@ -136,6 +137,8 @@ class MusicPlayer:
         
         self.temp_dir = tempfile.gettempdir()
         self.cached_files = {}
+        self.start_time = 0
+        self.pause_time = 0
     
     @property
     def playlist(self):
@@ -178,6 +181,7 @@ class MusicPlayer:
                 callback(f"⚠️ Error: {str(e)}")
 
     def play_song(self, song_node, callback=None):
+        import time
         if self.current_song:
             self.history.push(self.current_song)
         
@@ -185,33 +189,17 @@ class MusicPlayer:
         
         if song_node.file_path:
             try:
-                file_to_play = song_node.file_path
-                
-                if song_node.file_path.startswith('http://') or song_node.file_path.startswith('https://'):
-                    if song_node.file_path in self.cached_files:
-                        file_to_play = self.cached_files[song_node.file_path]
-                        pygame.mixer.music.load(file_to_play)
-                        pygame.mixer.music.play()
-                        self.is_playing = True
-                        self.is_paused = False
-                        return f"🎵 Memutar: {song_node.title}"
-                    else:
-                        download_thread = threading.Thread(
-                            target=self._download_and_play,
-                            args=(song_node, song_node.file_path, callback),
-                            daemon=True
-                        )
-                        download_thread.start()
-                        return f"⏳ Memuat: {song_node.title}..."
-                elif not os.path.exists(song_node.file_path):
-                    self.is_playing = False
-                    return f"▶️ Memutar: {song_node.title} (file tidak ditemukan)"
-                else:
-                    pygame.mixer.music.load(file_to_play)
+                if os.path.exists(song_node.file_path):
+                    pygame.mixer.music.load(song_node.file_path)
                     pygame.mixer.music.play()
                     self.is_playing = True
                     self.is_paused = False
+                    self.start_time = time.time()
+                    self.pause_time = 0
                     return f"🎵 Memutar: {song_node.title}"
+                else:
+                    self.is_playing = False
+                    return f"▶️ Memutar: {song_node.title} (file tidak ditemukan)"
             except Exception as e:
                 self.is_playing = False
                 return f"⚠️ Error memutar {song_node.title}: {str(e)}"
@@ -220,16 +208,23 @@ class MusicPlayer:
             return f"▶️ Memutar: {song_node.title} (audio tidak tersedia)"
 
     def pause_song(self):
+        import time
         if self.is_playing and not self.is_paused:
             pygame.mixer.music.pause()
             self.is_paused = True
+            self.pause_time = time.time()
             return "⏸️ Musik dijeda"
         return "Tidak ada musik yang sedang diputar"
 
     def resume_song(self):
+        import time
         if self.is_paused:
             pygame.mixer.music.unpause()
             self.is_paused = False
+            if self.pause_time > 0:
+                pause_duration = time.time() - self.pause_time
+                self.start_time += pause_duration
+                self.pause_time = 0
             return "▶️ Musik dilanjutkan"
         return "Tidak ada musik yang dijeda"
 
@@ -259,7 +254,10 @@ class MusicPlayer:
         return False
     
     def get_pos(self):
-        if self.is_playing or self.is_paused:
-            return pygame.mixer.music.get_pos() / 1000.0
+        import time
+        if self.is_playing and not self.is_paused:
+            return time.time() - self.start_time
+        elif self.is_paused:
+            return self.pause_time - self.start_time
         return 0
 
