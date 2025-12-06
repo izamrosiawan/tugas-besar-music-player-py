@@ -38,7 +38,6 @@ class App(ctk.CTk):
         self.show_frame("PageMenu")
 
     def setup_library(self):
-        """Setup library dengan banyak lagu contoh"""
         music_dir = os.path.join(os.path.dirname(__file__), "music")
         
         # Pop Artists
@@ -96,7 +95,6 @@ class App(ctk.CTk):
         album9.add_song(21, "Here Comes the Sun", "3:05", os.path.join(music_dir, "song21.mp3"))
 
     def show_frame(self, page_name):
-        """Show frame by name (string)"""
         frame = self.frames[page_name]
         frame.tkraise()
 
