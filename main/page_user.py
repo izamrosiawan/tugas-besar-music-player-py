@@ -1,6 +1,5 @@
 import customtkinter as ctk
 
-# Spotify Color Scheme
 SPOTIFY_BLACK = "#121212"
 SPOTIFY_DARK_GRAY = "#181818"
 SPOTIFY_GRAY = "#282828"
@@ -38,8 +37,33 @@ class PageUser(ctk.CTkFrame):
         
         playlist_header = ctk.CTkFrame(self.frame_playlist, height=50, fg_color=SPOTIFY_GRAY, corner_radius=10)
         playlist_header.pack(fill="x", padx=10, pady=10)
-        ctk.CTkLabel(playlist_header, text="📋 Playlist Saya", font=("Arial", 16, "bold"), 
+        ctk.CTkLabel(playlist_header, text="📋 Playlist", font=("Arial", 16, "bold"), 
                     text_color=SPOTIFY_WHITE).pack(side="left", padx=15, pady=10)
+        
+        # Playlist selector
+        playlist_select_frame = ctk.CTkFrame(self.frame_playlist, fg_color="transparent")
+        playlist_select_frame.pack(fill="x", padx=10, pady=(0, 5))
+        
+        self.playlist_dropdown = ctk.CTkOptionMenu(
+            playlist_select_frame, 
+            values=["My Playlist"],
+            command=lambda x: self.switch_playlist(controller, x),
+            fg_color=SPOTIFY_GRAY, 
+            button_color=SPOTIFY_GREEN,
+            button_hover_color="#1ed760",
+            dropdown_fg_color=SPOTIFY_GRAY,
+            font=("Arial", 11))
+        self.playlist_dropdown.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        
+        ctk.CTkButton(playlist_select_frame, text="➕", width=35, height=28, corner_radius=8,
+                    command=lambda: self.create_new_playlist(controller), 
+                    fg_color=SPOTIFY_GREEN, hover_color="#1ed760",
+                    font=("Arial", 16)).pack(side="left", padx=2)
+        
+        ctk.CTkButton(playlist_select_frame, text="🗑️", width=35, height=28, corner_radius=8,
+                    command=lambda: self.delete_current_playlist(controller), 
+                    fg_color="#8B0000", hover_color="#A52A2A",
+                    font=("Arial", 14)).pack(side="left", padx=2)
         
         self.playlist_box = ctk.CTkTextbox(self.frame_playlist, fg_color=SPOTIFY_GRAY, 
                                         text_color=SPOTIFY_WHITE, border_color=SPOTIFY_DARK_GRAY,
@@ -155,6 +179,25 @@ class PageUser(ctk.CTkFrame):
             progress_color=SPOTIFY_GREEN)
         self.volume_slider.set(70)
         self.volume_slider.pack(side="left", padx=5)
+        
+        self.controller = controller
+
+    def check_song_ended(self):
+        import pygame
+        try:
+            for event in pygame.event.get():
+                if event.type == pygame.USEREVENT:
+                    if self.controller.player.current_song:
+                        similar_songs = self.controller.player.get_similar_songs(
+                            self.controller.player.current_song)
+                        if similar_songs:
+                            import random
+                            next_song = random.choice(similar_songs)
+                            msg = self.controller.player.play_song(next_song)
+                            self.current_label.configure(text=msg)
+        except:
+            pass
+        self.after(100, self.check_song_ended)
 
     def refresh_library(self, controller):
         self.library_box.configure(state="normal")
@@ -162,16 +205,13 @@ class PageUser(ctk.CTkFrame):
         self.library_items = []
         art = controller.player.library.artists_head
         while art:
-            alb = art.albums_head
-            while alb:
-                song = alb.songs_head
-                while song:
-                    text = (f"{song.id}. {song.title} — {song.duration} "
-                        f"({art.artist_name} / {alb.album_name})\n")
-                    self.library_box.insert("end", text)
-                    self.library_items.append(song)
-                    song = song.next
-                alb = alb.next
+            song = art.songs_head
+            while song:
+                text = (f"{song.id}. {song.title} — {song.duration} "
+                    f"({art.artist_name}) [{song.genre}]\n")
+                self.library_box.insert("end", text)
+                self.library_items.append(song)
+                song = song.next
             art = art.next
         self.library_box.configure(state="disabled")
         self.selected_index = None
@@ -188,20 +228,17 @@ class PageUser(ctk.CTkFrame):
         art = controller.player.library.artists_head
         found_count = 0
         while art:
-            alb = art.albums_head
-            while alb:
-                song = alb.songs_head
-                while song:
-                    if (keyword in song.title.lower() or 
-                        keyword in art.artist_name.lower() or 
-                        keyword in alb.album_name.lower()):
-                        text = (f"{song.id}. {song.title} — {song.duration} "
-                            f"({art.artist_name} / {alb.album_name})\n")
-                        self.library_box.insert("end", text)
-                        self.library_items.append(song)
-                        found_count += 1
-                    song = song.next
-                alb = alb.next
+            song = art.songs_head
+            while song:
+                if (keyword in song.title.lower() or 
+                    keyword in art.artist_name.lower() or 
+                    keyword in song.genre.lower()):
+                    text = (f"{song.id}. {song.title} — {song.duration} "
+                        f"({art.artist_name}) [{song.genre}]\n")
+                    self.library_box.insert("end", text)
+                    self.library_items.append(song)
+                    found_count += 1
+                song = song.next
             art = art.next
         
         if found_count == 0:
@@ -211,7 +248,7 @@ class PageUser(ctk.CTkFrame):
 
     def get_first_song(self, controller):
         art = controller.player.library.artists_head
-        return art.albums_head.songs_head if art and art.albums_head else None
+        return art.songs_head if art else None
 
     def play_selected(self, controller):
         song = self.get_first_song(controller)
@@ -248,15 +285,12 @@ class PageUser(ctk.CTkFrame):
         found_song = None
         art = controller.player.library.artists_head
         while art and not found_song:
-            alb = art.albums_head
-            while alb and not found_song:
-                song = alb.songs_head
-                while song:
-                    if str(song.id) == str(song_id):
-                        found_song = song
-                        break
-                    song = song.next
-                alb = alb.next
+            song = art.songs_head
+            while song:
+                if str(song.id) == str(song_id):
+                    found_song = song
+                    break
+                song = song.next
             art = art.next
         
         if found_song:
@@ -356,3 +390,42 @@ class PageUser(ctk.CTkFrame):
         if 0 <= self.selected_index < len(self.library_items):
             msg = controller.player.play_song(self.library_items[self.selected_index])
             self.current_label.configure(text=msg)
+
+    def create_new_playlist(self, controller):
+        from tkinter import simpledialog
+        name = simpledialog.askstring("Playlist Baru", "Nama playlist:")
+        if name:
+            controller.player.playlist_manager.create_playlist(name)
+            self.update_playlist_dropdown(controller)
+            self.playlist_dropdown.set(name)
+            controller.player.playlist_manager.active_playlist = (
+                controller.player.playlist_manager.get_playlist(name))
+            self.status_label.configure(
+                text=f"Playlist '{name}' dibuat!", 
+                text_color=SPOTIFY_GREEN)
+
+    def delete_current_playlist(self, controller):
+        current = self.playlist_dropdown.get()
+        if current == "My Playlist":
+            return self.status_label.configure(
+                text="Tidak bisa hapus playlist default!", 
+                text_color="#FF6B6B")
+        controller.player.playlist_manager.delete_playlist(current)
+        self.update_playlist_dropdown(controller)
+        self.playlist_dropdown.set("My Playlist")
+        controller.player.playlist_manager.active_playlist = (
+            controller.player.playlist_manager.get_playlist("My Playlist"))
+        self.refresh_playlist(controller)
+        self.status_label.configure(
+            text=f"Playlist '{current}' dihapus!", 
+            text_color=SPOTIFY_GREEN)
+
+    def switch_playlist(self, controller, name):
+        playlist = controller.player.playlist_manager.get_playlist(name)
+        if playlist:
+            controller.player.playlist_manager.active_playlist = playlist
+            self.refresh_playlist(controller)
+
+    def update_playlist_dropdown(self, controller):
+        names = [p.name for p in controller.player.playlist_manager.playlists]
+        self.playlist_dropdown.configure(values=names if names else ["My Playlist"])

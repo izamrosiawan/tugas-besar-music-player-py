@@ -1,6 +1,5 @@
 import customtkinter as ctk
 
-# Spotify Color Scheme
 SPOTIFY_BLACK = "#121212"
 SPOTIFY_DARK_GRAY = "#181818"
 SPOTIFY_GRAY = "#282828"
@@ -62,12 +61,13 @@ class PageAdmin(ctk.CTkFrame):
                                         text_color=SPOTIFY_WHITE, placeholder_text="Nama artis...")
         self.artist_entry.pack(fill="x", pady=(0, 10))
         
-        ctk.CTkLabel(form_content, text="Album:", font=("Arial", 12, "bold"), 
+        ctk.CTkLabel(form_content, text="Genre:", font=("Arial", 12, "bold"), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
-        self.album_entry = ctk.CTkEntry(form_content, height=35, corner_radius=10,
+        self.genre_entry = ctk.CTkEntry(form_content, height=35, corner_radius=10,
                                     fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
-                                    text_color=SPOTIFY_WHITE, placeholder_text="Nama album...")
-        self.album_entry.pack(fill="x", pady=(0, 10))
+                                    text_color=SPOTIFY_WHITE, 
+                                    placeholder_text="Pop, Rock, R&B, Alternative, Electronic, Classic...")
+        self.genre_entry.pack(fill="x", pady=(0, 10))
         
         row1 = ctk.CTkFrame(form_content, fg_color="transparent")
         row1.pack(fill="x", pady=(0, 10))
@@ -97,6 +97,24 @@ class PageAdmin(ctk.CTkFrame):
                                     text_color=SPOTIFY_WHITE, placeholder_text="Judul lagu...")
         self.title_entry.pack(fill="x", pady=(0, 10))
         
+        # File upload section
+        ctk.CTkLabel(form_content, text="File Audio (opsional):", font=("Arial", 12, "bold"), 
+                    text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
+        
+        file_frame = ctk.CTkFrame(form_content, fg_color="transparent")
+        file_frame.pack(fill="x", pady=(0, 10))
+        
+        self.file_path_entry = ctk.CTkEntry(file_frame, height=35, corner_radius=10,
+                                    fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
+                                    text_color=SPOTIFY_WHITE, 
+                                    placeholder_text="Pilih file MP3...")
+        self.file_path_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        
+        ctk.CTkButton(file_frame, text="📁 Pilih File", width=120, height=35, corner_radius=10,
+                    command=self.browse_file, 
+                    fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E",
+                    font=("Arial", 12, "bold")).pack(side="left")
+        
         self.error_label = ctk.CTkLabel(form_content, text="", font=("Arial", 11, "bold"),
                                     text_color="#FF6B6B", wraplength=500)
         self.error_label.pack(pady=10)
@@ -123,36 +141,44 @@ class PageAdmin(ctk.CTkFrame):
         self.form_mode = "add"
         self.current_edit_song = None
 
+    def browse_file(self):
+        from tkinter import filedialog
+        file_path = filedialog.askopenfilename(
+            title="Pilih File Audio",
+            filetypes=[("Audio Files", "*.mp3 *.wav *.ogg"), ("All Files", "*.*")]
+        )
+        if file_path:
+            self.file_path_entry.delete(0, 'end')
+            self.file_path_entry.insert(0, file_path)
+
     def refresh_admin_library(self, controller):
         self.admin_library_box.configure(state="normal")
         self.admin_library_box.delete("1.0", "end")
         art = controller.player.library.artists_head
         while art:
-            alb = art.albums_head
-            while alb:
-                song = alb.songs_head
-                while song:
-                    text = (f"{song.id}. {song.title} — {song.duration} "
-                        f"({art.artist_name} / {alb.album_name})\n")
-                    self.admin_library_box.insert("end", text)
-                    song = song.next
-                alb = alb.next
+            song = art.songs_head
+            while song:
+                text = (f"{song.id}. {song.title} — {song.duration} "
+                    f"({art.artist_name}) [{song.genre}]\n")
+                self.admin_library_box.insert("end", text)
+                song = song.next
             art = art.next
         self.admin_library_box.configure(state="disabled")
 
     def clear_form(self):
         self.artist_entry.delete(0, 'end')
-        self.album_entry.delete(0, 'end')
+        self.genre_entry.delete(0, 'end')
         self.id_entry.delete(0, 'end')
         self.title_entry.delete(0, 'end')
         self.duration_entry.delete(0, 'end')
+        self.file_path_entry.delete(0, 'end')
         self.error_label.configure(text="")
         self.form_mode = "add"
         self.current_edit_song = None
 
     def save_song_from_form(self, controller):
         artist_name = self.artist_entry.get().strip()
-        album_name = self.album_entry.get().strip()
+        genre_name = self.genre_entry.get().strip() or "Unknown"
         title = self.title_entry.get().strip()
         duration = self.duration_entry.get().strip()
         
@@ -178,35 +204,23 @@ class PageAdmin(ctk.CTkFrame):
         if not found_artist:
             found_artist = lib.add_artist(artist_name)
 
-        found_album = None
-        alb = found_artist.albums_head
-        while alb:
-            if alb.album_name == album_name:
-                found_album = alb
-                break
-            alb = alb.next
-        if not found_album:
-            found_album = found_artist.add_album(album_name or "Album Baru")
-
         if song_id is None:
             max_id = 0
             a = lib.artists_head
             while a:
-                b = a.albums_head
-                while b:
-                    s = b.songs_head
-                    while s:
-                        try:
-                            if int(s.id) > max_id:
-                                max_id = int(s.id)
-                        except Exception:
-                            pass
-                        s = s.next
-                    b = b.next
+                s = a.songs_head
+                while s:
+                    try:
+                        if int(s.id) > max_id:
+                            max_id = int(s.id)
+                    except Exception:
+                        pass
+                    s = s.next
                 a = a.next
             song_id = max_id + 1
 
-        found_album.add_song(song_id, title, duration)
+        file_path = self.file_path_entry.get().strip() or None
+        found_artist.add_song(song_id, title, duration, file_path, genre_name)
         controller.frames["PageUser"].refresh_library(controller)
         self.refresh_admin_library(controller)
         self.clear_form()
@@ -226,22 +240,19 @@ class PageAdmin(ctk.CTkFrame):
         lib, found = controller.player.library, False
         art = lib.artists_head
         while art and not found:
-            alb = art.albums_head
-            while alb and not found:
-                if alb.songs_head and str(alb.songs_head.id) == str(song_id):
-                    alb.songs_head = alb.songs_head.next
-                    found = True
-                    break
-                prev_song = alb.songs_head
-                if prev_song:
-                    curr_song = prev_song.next
-                    while curr_song:
-                        if str(curr_song.id) == str(song_id):
-                            prev_song.next = curr_song.next
-                            found = True
-                            break
-                        prev_song, curr_song = curr_song, curr_song.next
-                alb = alb.next
+            if art.songs_head and str(art.songs_head.id) == str(song_id):
+                art.songs_head = art.songs_head.next
+                found = True
+                break
+            prev_song = art.songs_head
+            if prev_song:
+                curr_song = prev_song.next
+                while curr_song:
+                    if str(curr_song.id) == str(song_id):
+                        prev_song.next = curr_song.next
+                        found = True
+                        break
+                    prev_song, curr_song = curr_song, curr_song.next
             art = art.next
         
         if found:
@@ -262,7 +273,9 @@ class PageAdmin(ctk.CTkFrame):
             return self.error_label.configure(
                 text="Masukkan ID lagu yang ingin diperbarui!", 
                 text_color="#FF6B6B")
-        title, duration = self.title_entry.get().strip(), self.duration_entry.get().strip()
+        title = self.title_entry.get().strip()
+        duration = self.duration_entry.get().strip()
+        genre = self.genre_entry.get().strip()
         if not title:
             return self.error_label.configure(text="Judul lagu wajib diisi!", text_color="#FF6B6B")
         if not duration:
@@ -275,15 +288,16 @@ class PageAdmin(ctk.CTkFrame):
         lib, found = controller.player.library, False
         art = lib.artists_head
         while art and not found:
-            alb = art.albums_head
-            while alb and not found:
-                song = alb.songs_head
-                while song:
-                    if str(song.id) == str(song_id):
-                        song.title, song.duration, found = title, duration, True
-                        break
-                    song = song.next
-                alb = alb.next
+            song = art.songs_head
+            while song:
+                if str(song.id) == str(song_id):
+                    song.title = title
+                    song.duration = duration
+                    if genre:
+                        song.genre = genre
+                    found = True
+                    break
+                song = song.next
             art = art.next
         
         if found:

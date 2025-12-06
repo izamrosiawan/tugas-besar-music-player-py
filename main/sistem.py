@@ -1,27 +1,26 @@
-# Backend — Struktur Data
 import pygame
 import os
 
-# Inisialisasi pygame mixer untuk audio
 pygame.mixer.init()
 
 class SongNode:
-    def __init__(self, id, title, duration, file_path=None):
+    def __init__(self, id, title, duration, file_path=None, genre="Unknown"):
         self.id = id
         self.title = title
         self.duration = duration
-        self.file_path = file_path  # Path ke file MP3
+        self.file_path = file_path
+        self.genre = genre
         self.next = None
 
 
-class AlbumNode:
-    def __init__(self, album_name):
-        self.album_name = album_name
+class ArtistNode:
+    def __init__(self, artist_name):
+        self.artist_name = artist_name
         self.songs_head = None
         self.next = None
 
-    def add_song(self, id, title, duration, file_path=None):
-        new_song = SongNode(id, title, duration, file_path)
+    def add_song(self, id, title, duration, file_path=None, genre="Unknown"):
+        new_song = SongNode(id, title, duration, file_path, genre)
         if not self.songs_head:
             self.songs_head = new_song
         else:
@@ -30,24 +29,6 @@ class AlbumNode:
                 curr = curr.next
             curr.next = new_song
         return new_song
-
-
-class ArtistNode:
-    def __init__(self, artist_name):
-        self.artist_name = artist_name
-        self.albums_head = None
-        self.next = None
-
-    def add_album(self, album_name):
-        new_album = AlbumNode(album_name)
-        if not self.albums_head:
-            self.albums_head = new_album
-        else:
-            curr = self.albums_head
-            while curr.next:
-                curr = curr.next
-            curr.next = new_album
-        return new_album
 
 
 class MusicLibrary:
@@ -66,8 +47,6 @@ class MusicLibrary:
         return new_artist
 
 
-# Playlist
-
 class PlaylistNode:
     def __init__(self, song):
         self.song = song
@@ -76,7 +55,8 @@ class PlaylistNode:
 
 
 class Playlist:
-    def __init__(self):
+    def __init__(self, name="My Playlist"):
+        self.name = name
         self.head = None
         self.tail = None
 
@@ -90,7 +70,29 @@ class Playlist:
             self.tail = new_node
 
 
-# Stack & Queue
+class PlaylistManager:
+    def __init__(self):
+        self.playlists = []
+        self.active_playlist = None
+    
+    def create_playlist(self, name):
+        playlist = Playlist(name)
+        self.playlists.append(playlist)
+        if not self.active_playlist:
+            self.active_playlist = playlist
+        return playlist
+    
+    def delete_playlist(self, name):
+        self.playlists = [p for p in self.playlists if p.name != name]
+        if self.active_playlist and self.active_playlist.name == name:
+            self.active_playlist = self.playlists[0] if self.playlists else None
+    
+    def get_playlist(self, name):
+        for p in self.playlists:
+            if p.name == name:
+                return p
+        return None
+
 
 class PlayHistory:
     def __init__(self):
@@ -114,19 +116,43 @@ class PlayQueue:
         return self.queue.pop(0) if self.queue else None
 
 
-# Music Player (wrapper)
-
 class MusicPlayer:
     def __init__(self):
         self.library = MusicLibrary()
-        self.playlist = Playlist()
+        self.playlist_manager = PlaylistManager()
+        self.playlist_manager.create_playlist("My Playlist")
         self.history = PlayHistory()
         self.queue = PlayQueue()
         self.current_song = None
         self.is_playing = False
         self.is_paused = False
-        self.volume = 0.7  # Volume default 70%
+        self.volume = 0.7
         pygame.mixer.music.set_volume(self.volume)
+        
+        pygame.mixer.music.set_endevent(pygame.USEREVENT)
+    
+    @property
+    def playlist(self):
+        return self.playlist_manager.active_playlist if self.playlist_manager.active_playlist else Playlist()
+
+    def get_all_songs(self):
+        songs = []
+        curr_artist = self.library.artists_head
+        while curr_artist:
+            curr_song = curr_artist.songs_head
+            while curr_song:
+                songs.append(curr_song)
+                curr_song = curr_song.next
+            curr_artist = curr_artist.next
+        return songs
+
+    def get_similar_songs(self, current_song, limit=5):
+        if not current_song:
+            return []
+        
+        all_songs = self.get_all_songs()
+        similar = [s for s in all_songs if s.genre == current_song.genre and s.id != current_song.id]
+        return similar[:limit]
 
     def play_song(self, song_node):
         if self.current_song:
@@ -134,7 +160,6 @@ class MusicPlayer:
         
         self.current_song = song_node
         
-        # Jika ada file path, mainkan audio
         if song_node.file_path and os.path.exists(song_node.file_path):
             try:
                 pygame.mixer.music.load(song_node.file_path)
@@ -145,7 +170,6 @@ class MusicPlayer:
             except Exception as e:
                 return f"⚠️ Error memutar {song_node.title}: {str(e)}"
         else:
-            # Jika tidak ada file, hanya tampilkan info
             self.is_playing = False
             return f"▶️ Memutar: {song_node.title} (audio tidak tersedia)"
 
