@@ -2,7 +2,7 @@ import os
 
 def load_dummy_data(player):
     
-    music_folder = os.path.join(os.path.expanduser("~"), "Music")
+    music_folder = r"C:\Users\LENOVO\Downloads\music-tubes"
     
     taylor = player.library.add_artist("Taylor Swift")
     taylor.add_song(1, "Shake It Off", "3:39", 
@@ -112,108 +112,52 @@ def load_dummy_data(player):
     billie.add_song(42, "Happier Than Ever", "4:58", 
                    os.path.join(music_folder, "billie_eilish_happier_than_ever.mp3"), "Alternative")
     
-    tame = player.library.add_artist("Tame Impala")
-    tame.add_song(43, "The Less I Know The Better", "3:36", 
-                 os.path.join(music_folder, "tame_impala_the_less_i_know_the_better.mp3"), "Alternative")
-    tame.add_song(44, "Let It Happen", "7:47", 
-                 os.path.join(music_folder, "tame_impala_let_it_happen.mp3"), "Alternative")
-    tame.add_song(45, "Borderline", "3:58", 
-                 os.path.join(music_folder, "tame_impala_borderline.mp3"), "Alternative")
-    
     arctic = player.library.add_artist("Arctic Monkeys")
-    arctic.add_song(46, "Do I Wanna Know?", "4:32", 
+    arctic.add_song(43, "Do I Wanna Know?", "4:32", 
                    os.path.join(music_folder, "arctic_monkeys_do_i_wanna_know.mp3"), "Alternative")
-    arctic.add_song(47, "505", "4:13", 
+    arctic.add_song(44, "505", "4:13", 
                    os.path.join(music_folder, "arctic_monkeys_505.mp3"), "Alternative")
-    arctic.add_song(48, "R U Mine?", "3:21", 
+    arctic.add_song(45, "R U Mine?", "3:21", 
                    os.path.join(music_folder, "arctic_monkeys_r_u_mine.mp3"), "Alternative")
     
-    marshmello = player.library.add_artist("Marshmello")
-    marshmello.add_song(49, "Happier", "3:34", 
-                       os.path.join(music_folder, "marshmello_happier.mp3"), "Electronic")
-    marshmello.add_song(50, "Alone", "4:33", 
-                       os.path.join(music_folder, "marshmello_alone.mp3"), "Electronic")
-    
-    chainsmokers = player.library.add_artist("The Chainsmokers")
-    chainsmokers.add_song(51, "Closer", "4:04", 
-                         os.path.join(music_folder, "the_chainsmokers_closer.mp3"), "Electronic")
-    chainsmokers.add_song(52, "Don't Let Me Down", "3:28", 
-                         os.path.join(music_folder, "the_chainsmokers_dont_let_me_down.mp3"), "Electronic")
-    
     calvin = player.library.add_artist("Calvin Harris")
-    calvin.add_song(53, "Summer", "3:43", 
+    calvin.add_song(46, "Summer", "3:43", 
                    os.path.join(music_folder, "calvin_harris_summer.mp3"), "Electronic")
-    calvin.add_song(54, "Feel So Close", "3:27", 
+    calvin.add_song(47, "Feel So Close", "3:27", 
                    os.path.join(music_folder, "calvin_harris_feel_so_close.mp3"), "Electronic")
     
     drake = player.library.add_artist("Drake")
-    drake.add_song(55, "God's Plan", "3:18", 
+    drake.add_song(48, "God's Plan", "3:18", 
                   os.path.join(music_folder, "drake_gods_plan.mp3"), "Hip Hop")
-    drake.add_song(56, "One Dance", "2:54", 
+    drake.add_song(49, "One Dance", "2:54", 
                   os.path.join(music_folder, "drake_one_dance.mp3"), "Hip Hop")
-    drake.add_song(57, "Hotline Bling", "4:27", 
+    drake.add_song(50, "Hotline Bling", "4:27", 
                   os.path.join(music_folder, "drake_hotline_bling.mp3"), "Hip Hop")
     
-    post = player.library.add_artist("Post Malone")
-    post.add_song(58, "Circles", "3:35", 
-                 os.path.join(music_folder, "post_malone_circles.mp3"), "Hip Hop")
-    post.add_song(59, "Sunflower", "2:38", 
-                 os.path.join(music_folder, "post_malone_sunflower.mp3"), "Hip Hop")
-    post.add_song(60, "Rockstar", "3:38", 
-                 os.path.join(music_folder, "post_malone_rockstar.mp3"), "Hip Hop")
-    
-    beatles = player.library.add_artist("The Beatles")
-    beatles.add_song(61, "Come Together", "4:19", 
-                    os.path.join(music_folder, "the_beatles_come_together.mp3"), "Classic")
-    beatles.add_song(62, "Here Comes the Sun", "3:05", 
-                    os.path.join(music_folder, "the_beatles_here_comes_the_sun.mp3"), "Classic")
-    beatles.add_song(63, "Let It Be", "3:50", 
-                    os.path.join(music_folder, "the_beatles_let_it_be.mp3"), "Classic")
-    
-    queen = player.library.add_artist("Queen")
-    queen.add_song(64, "Bohemian Rhapsody", "5:55", 
-                  os.path.join(music_folder, "queen_bohemian_rhapsody.mp3"), "Classic")
-    queen.add_song(65, "We Will Rock You", "2:02", 
-                  os.path.join(music_folder, "queen_we_will_rock_you.mp3"), "Classic")
-    queen.add_song(66, "Don't Stop Me Now", "3:29", 
-                  os.path.join(music_folder, "queen_dont_stop_me_now.mp3"), "Classic")
-    
     eagles = player.library.add_artist("Eagles")
-    eagles.add_song(67, "Hotel California", "6:30", 
+    eagles.add_song(51, "Hotel California", "6:30", 
                    os.path.join(music_folder, "eagles_hotel_california.mp3"), "Classic")
-    eagles.add_song(68, "Take It Easy", "3:31", 
+    eagles.add_song(52, "Take It Easy", "3:31", 
                    os.path.join(music_folder, "eagles_take_it_easy.mp3"), "Classic")
     
     bts = player.library.add_artist("BTS")
-    bts.add_song(69, "Dynamite", "3:19", 
+    bts.add_song(53, "Dynamite", "3:19", 
                 os.path.join(music_folder, "bts_dynamite.mp3"), "K-Pop")
-    bts.add_song(70, "Butter", "2:44", 
+    bts.add_song(54, "Butter", "2:44", 
                 os.path.join(music_folder, "bts_butter.mp3"), "K-Pop")
-    bts.add_song(71, "Boy With Luv", "3:49", 
+    bts.add_song(55, "Boy With Luv", "3:49", 
                 os.path.join(music_folder, "bts_boy_with_luv.mp3"), "K-Pop")
     
     blackpink = player.library.add_artist("BLACKPINK")
-    blackpink.add_song(72, "DDU-DU DDU-DU", "3:29", 
+    blackpink.add_song(56, "DDU-DU DDU-DU", "3:29", 
                       os.path.join(music_folder, "blackpink_ddu_du_ddu_du.mp3"), "K-Pop")
-    blackpink.add_song(73, "How You Like That", "3:02", 
+    blackpink.add_song(57, "How You Like That", "3:02", 
                       os.path.join(music_folder, "blackpink_how_you_like_that.mp3"), "K-Pop")
-    blackpink.add_song(74, "Pink Venom", "3:07", 
+    blackpink.add_song(58, "Pink Venom", "3:07", 
                       os.path.join(music_folder, "blackpink_pink_venom.mp3"), "K-Pop")
     
-    newjeans = player.library.add_artist("NewJeans")
-    newjeans.add_song(75, "Ditto", "3:05", 
-                     os.path.join(music_folder, "newjeans_ditto.mp3"), "K-Pop")
-    newjeans.add_song(76, "OMG", "3:36", 
-                     os.path.join(music_folder, "newjeans_omg.mp3"), "K-Pop")
-    
     bad_bunny = player.library.add_artist("Bad Bunny")
-    bad_bunny.add_song(77, "Tití Me Preguntó", "4:02", 
+    bad_bunny.add_song(59, "Tití Me Preguntó", "4:02", 
                       os.path.join(music_folder, "bad_bunny_titi_me_pregunto.mp3"), "Latin")
-    bad_bunny.add_song(78, "Callaita", "4:10", 
+    bad_bunny.add_song(60, "Callaita", "4:10", 
                       os.path.join(music_folder, "bad_bunny_callaita.mp3"), "Latin")
-    
-    shakira = player.library.add_artist("Shakira")
-    shakira.add_song(79, "Hips Don't Lie", "3:38", 
-                    os.path.join(music_folder, "shakira_hips_dont_lie.mp3"), "Latin")
-    shakira.add_song(80, "Waka Waka", "3:22", 
-                    os.path.join(music_folder, "shakira_waka_waka.mp3"), "Latin")
