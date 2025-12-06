@@ -17,7 +17,7 @@ class App(ctk.CTk):
         
         load_dummy_data(self.player)
         
-        self.title("CIC Music Player - Spotify Theme")
+        self.title("CIC Music Player")
         self.geometry("1200x700")
         self.configure(fg_color=SPOTIFY_BLACK)
         self.container = ctk.CTkFrame(self, fg_color=SPOTIFY_BLACK)
