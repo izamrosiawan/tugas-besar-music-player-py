@@ -5,26 +5,42 @@ def load_dummy_data(player):
     music_folder = r"C:\Users\LENOVO\Downloads\music-tubes"
     
     taylor = player.library.add_artist("Taylor Swift")
-    taylor.add_song(1, "Shake It Off", "3:39", 
-                   os.path.join(music_folder, "taylor_swift_shake_it_off.mp3"), "Pop")
-    taylor.add_song(2, "Blank Space", "3:51", 
-                   os.path.join(music_folder, "taylor_swift_blank_space.mp3"), "Pop")
-    taylor.add_song(3, "Style", "3:51", 
-                   os.path.join(music_folder, "taylor_swift_style.mp3"), "Pop")
-    taylor.add_song(4, "Love Story", "3:56", 
-                   os.path.join(music_folder, "taylor_swift_love_story.mp3"), "Pop")
-    taylor.add_song(5, "Anti-Hero", "3:21", 
-                   os.path.join(music_folder, "taylor_swift_anti_hero.mp3"), "Pop")
+    album_1989 = taylor.add_album("1989", 2014)
+    song1 = taylor.add_song(1, "Shake It Off", "3:39", 
+                   os.path.join(music_folder, "taylor_swift_shake_it_off.mp3"), "Pop", "1989")
+    album_1989.add_song(song1)
+    song2 = taylor.add_song(2, "Blank Space", "3:51", 
+                   os.path.join(music_folder, "taylor_swift_blank_space.mp3"), "Pop", "1989")
+    album_1989.add_song(song2)
+    song3 = taylor.add_song(3, "Style", "3:51", 
+                   os.path.join(music_folder, "taylor_swift_style.mp3"), "Pop", "1989")
+    album_1989.add_song(song3)
+    
+    album_fearless = taylor.add_album("Fearless", 2008)
+    song4 = taylor.add_song(4, "Love Story", "3:56", 
+                   os.path.join(music_folder, "taylor_swift_love_story.mp3"), "Pop", "Fearless")
+    album_fearless.add_song(song4)
+    
+    album_midnights = taylor.add_album("Midnights", 2022)
+    song5 = taylor.add_song(5, "Anti-Hero", "3:21", 
+                   os.path.join(music_folder, "taylor_swift_anti_hero.mp3"), "Pop", "Midnights")
+    album_midnights.add_song(song5)
     
     ed = player.library.add_artist("Ed Sheeran")
-    ed.add_song(6, "Shape of You", "3:53", 
-               os.path.join(music_folder, "ed_sheeran_shape_of_you.mp3"), "Pop")
-    ed.add_song(7, "Perfect", "4:23", 
-               os.path.join(music_folder, "ed_sheeran_perfect.mp3"), "Pop")
-    ed.add_song(8, "Castle on the Hill", "4:21", 
-               os.path.join(music_folder, "ed_sheeran_castle_on_the_hill.mp3"), "Pop")
-    ed.add_song(9, "Thinking Out Loud", "4:41", 
-               os.path.join(music_folder, "ed_sheeran_thinking_out_loud.mp3"), "Pop")
+    album_divide = ed.add_album("Divide", 2017)
+    song6 = ed.add_song(6, "Shape of You", "3:53", 
+               os.path.join(music_folder, "ed_sheeran_shape_of_you.mp3"), "Pop", "Divide")
+    album_divide.add_song(song6)
+    song7 = ed.add_song(7, "Perfect", "4:23", 
+               os.path.join(music_folder, "ed_sheeran_perfect.mp3"), "Pop", "Divide")
+    album_divide.add_song(song7)
+    song8 = ed.add_song(8, "Castle on the Hill", "4:21", 
+               os.path.join(music_folder, "ed_sheeran_castle_on_the_hill.mp3"), "Pop", "Divide")
+    album_divide.add_song(song8)
+    song9 = ed.add_song(9, "Thinking Out Loud", "4:41", 
+               os.path.join(music_folder, "ed_sheeran_thinking_out_loud.mp3"), "Pop", "X")
+    ed_album_x = ed.add_album("X", 2014)
+    ed_album_x.add_song(song9)
     
     ariana = player.library.add_artist("Ariana Grande")
     ariana.add_song(10, "7 rings", "2:58", 

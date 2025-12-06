@@ -8,23 +8,42 @@ pygame.mixer.init()
 pygame.init()
 
 class SongNode:
-    def __init__(self, id, title, duration, file_path=None, genre="Unknown"):
+    def __init__(self, id, title, duration, file_path=None, genre="Unknown", album=None):
         self.id = id
         self.title = title
         self.duration = duration
         self.file_path = file_path
         self.genre = genre
+        self.album = album
         self.next = None
+
+
+class AlbumNode:
+    def __init__(self, album_name, year=None):
+        self.album_name = album_name
+        self.year = year
+        self.songs_head = None
+        self.next = None
+    
+    def add_song(self, song):
+        if not self.songs_head:
+            self.songs_head = song
+        else:
+            curr = self.songs_head
+            while curr.next:
+                curr = curr.next
+            curr.next = song
 
 
 class ArtistNode:
     def __init__(self, artist_name):
         self.artist_name = artist_name
         self.songs_head = None
+        self.albums_head = None
         self.next = None
 
-    def add_song(self, id, title, duration, file_path=None, genre="Unknown"):
-        new_song = SongNode(id, title, duration, file_path, genre)
+    def add_song(self, id, title, duration, file_path=None, genre="Unknown", album=None):
+        new_song = SongNode(id, title, duration, file_path, genre, album)
         if not self.songs_head:
             self.songs_head = new_song
         else:
@@ -33,6 +52,17 @@ class ArtistNode:
                 curr = curr.next
             curr.next = new_song
         return new_song
+    
+    def add_album(self, album_name, year=None):
+        new_album = AlbumNode(album_name, year)
+        if not self.albums_head:
+            self.albums_head = new_album
+        else:
+            curr = self.albums_head
+            while curr.next:
+                curr = curr.next
+            curr.next = new_album
+        return new_album
 
 
 class MusicLibrary:

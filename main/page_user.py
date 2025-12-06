@@ -128,63 +128,77 @@ class PageUser(ctk.CTkFrame):
         self.status_label.pack(pady=15)
 
         # Bottom: Player Controls (Fixed at bottom)
-        self.frame_control = ctk.CTkFrame(self, height=120, fg_color=SPOTIFY_DARK_GRAY, corner_radius=0)
+        self.frame_control = ctk.CTkFrame(self, height=100, fg_color=SPOTIFY_DARK_GRAY, corner_radius=0)
         self.frame_control.pack(side="bottom", fill="x", padx=0, pady=0)
         
-        # Now Playing Label
-        self.current_label = ctk.CTkLabel(self.frame_control, text="▶️ Tidak ada lagu yang diputar", 
-                                        font=("Arial", 13, "bold"), text_color=SPOTIFY_WHITE)
-        self.current_label.pack(pady=(15, 10))
+        # Seekbar di paling atas
+        seekbar_container = ctk.CTkFrame(self.frame_control, fg_color="transparent", height=30)
+        seekbar_container.pack(fill="x", padx=20, pady=(8, 0))
         
-        # Control Buttons (Spotify Style)
-        control_btns = ctk.CTkFrame(self.frame_control, fg_color="transparent")
-        control_btns.pack(pady=(5, 10))
+        self.time_current = ctk.CTkLabel(seekbar_container, text="0:00", 
+                                        font=("Arial", 10), text_color=SPOTIFY_LIGHT_GRAY)
+        self.time_current.pack(side="left", padx=(0, 8))
         
-        ctk.CTkButton(control_btns, text="🔀", width=45, height=45, corner_radius=25,
-                    command=lambda: None, 
-                    fg_color="transparent", hover_color=SPOTIFY_GRAY,
-                    text_color=SPOTIFY_LIGHT_GRAY,
-                    font=("Arial", 18)).grid(row=0, column=0, padx=8)
+        self.seekbar = ctk.CTkSlider(seekbar_container, from_=0, to=100,
+                                    fg_color="#4d4d4d", progress_color=SPOTIFY_WHITE,
+                                    button_color=SPOTIFY_WHITE, button_hover_color="#b3b3b3",
+                                    height=4, button_length=12,
+                                    command=lambda v: self.on_seek(controller, v))
+        self.seekbar.set(0)
+        self.seekbar.pack(side="left", fill="x", expand=True)
         
-        ctk.CTkButton(control_btns, text="⏮", width=45, height=45, corner_radius=25,
+        self.time_total = ctk.CTkLabel(seekbar_container, text="0:00", 
+                                      font=("Arial", 10), text_color=SPOTIFY_LIGHT_GRAY)
+        self.time_total.pack(side="left", padx=(8, 0))
+        
+        # Container untuk control buttons dan volume
+        controls_main = ctk.CTkFrame(self.frame_control, fg_color="transparent")
+        controls_main.pack(fill="x", padx=20, pady=(5, 8))
+        
+        # Left: Now Playing
+        self.current_label = ctk.CTkLabel(controls_main, text="▶️ Tidak ada lagu", 
+                                        font=("Arial", 11), text_color=SPOTIFY_WHITE, anchor="w")
+        self.current_label.pack(side="left", padx=(0, 20))
+        
+        # Center: Control Buttons
+        control_btns = ctk.CTkFrame(controls_main, fg_color="transparent")
+        control_btns.pack(side="left", expand=True)
+        
+        # Center: Control Buttons
+        control_btns = ctk.CTkFrame(controls_main, fg_color="transparent")
+        control_btns.pack(side="left", expand=True)
+        
+        ctk.CTkButton(control_btns, text="⏮", width=35, height=35, corner_radius=20,
                     command=lambda: self.previous_song(controller), 
                     fg_color="transparent", hover_color=SPOTIFY_GRAY,
-                    text_color=SPOTIFY_WHITE,
-                    font=("Arial", 20)).grid(row=0, column=1, padx=8)
+                    text_color=SPOTIFY_WHITE, font=("Arial", 16)).pack(side="left", padx=5)
         
-        self.play_pause_btn = ctk.CTkButton(control_btns, text="▶", width=50, height=50, corner_radius=25,
-                    command=lambda: self.toggle_play_pause(controller), 
-                    fg_color=SPOTIFY_WHITE, hover_color="#E0E0E0",
-                    text_color=SPOTIFY_BLACK,
-                    font=("Arial", 22, "bold"))
-        self.play_pause_btn.grid(row=0, column=2, padx=8)
+        self.play_pause_btn = ctk.CTkButton(control_btns, text="▶", width=38, height=38, 
+                    corner_radius=20, command=lambda: self.toggle_play_pause(controller), 
+                    fg_color=SPOTIFY_WHITE, hover_color="#b3b3b3",
+                    text_color=SPOTIFY_BLACK, font=("Arial", 16, "bold"))
+        self.play_pause_btn.pack(side="left", padx=5)
         
-        ctk.CTkButton(control_btns, text="⏭", width=45, height=45, corner_radius=25,
+        ctk.CTkButton(control_btns, text="⏭", width=35, height=35, corner_radius=20,
                     command=lambda: self.next_song(controller), 
                     fg_color="transparent", hover_color=SPOTIFY_GRAY,
-                    text_color=SPOTIFY_WHITE,
-                    font=("Arial", 20)).grid(row=0, column=3, padx=8)
-        
-        ctk.CTkButton(control_btns, text="🔁", width=45, height=45, corner_radius=25,
-                    command=lambda: None, 
-                    fg_color="transparent", hover_color=SPOTIFY_GRAY,
-                    text_color=SPOTIFY_LIGHT_GRAY,
-                    font=("Arial", 18)).grid(row=0, column=4, padx=8)
+                    text_color=SPOTIFY_WHITE, font=("Arial", 16)).pack(side="left", padx=5)
         
         self.is_playing_state = False
         
-        # Volume Control
-        volume_frame = ctk.CTkFrame(self.frame_control, fg_color="transparent")
-        volume_frame.pack(side="right", padx=20)
+        # Right: Volume Control
+        volume_frame = ctk.CTkFrame(controls_main, fg_color="transparent")
+        volume_frame.pack(side="right")
         
-        ctk.CTkLabel(volume_frame, text="🔊", font=("Arial", 14)).pack(
-            side="left", padx=5)
+        ctk.CTkLabel(volume_frame, text="🔊", font=("Arial", 14)).pack(side="left", padx=5)
         self.volume_slider = ctk.CTkSlider(
-            volume_frame, from_=0, to=100, width=120,
+            volume_frame, from_=0, to=100, width=100,
             command=lambda v: self.change_volume(controller, v),
-            button_color=SPOTIFY_GREEN, 
-            button_hover_color="#1ed760",
-            progress_color=SPOTIFY_GREEN)
+            button_color=SPOTIFY_WHITE, 
+            button_hover_color="#b3b3b3",
+            progress_color=SPOTIFY_WHITE,
+            fg_color="#4d4d4d",
+            height=4)
         self.volume_slider.set(70)
         self.volume_slider.pack(side="left", padx=5)
         
@@ -196,18 +210,42 @@ class PageUser(ctk.CTkFrame):
         try:
             for event in pygame.event.get():
                 if event.type == pygame.USEREVENT:
-                    print("[AUTO-PLAY] USEREVENT triggered")
+                    print("[AUTO-PLAY] Song ended via USEREVENT")
                     self.next_song(self.controller)
                     return
             
             if self.controller.player.current_song and self.controller.player.is_playing:
-                if not pygame.mixer.music.get_busy():
-                    print("[AUTO-PLAY] Music ended (get_busy=False), playing next...")
+                current_pos = self.controller.player.get_pos()
+                
+                if not pygame.mixer.music.get_busy() and current_pos > 1.0:
+                    print("[AUTO-PLAY] Song ended via get_busy")
                     self.controller.player.is_playing = False
                     self.next_song(self.controller)
                     return
+                
+                duration_str = self.controller.player.current_song.duration
+                try:
+                    parts = duration_str.split(":")
+                    if len(parts) == 2:
+                        total_seconds = int(parts[0]) * 60 + int(parts[1])
+                    else:
+                        total_seconds = 180
+                    
+                    if total_seconds > 0 and current_pos >= 0:
+                        progress = (current_pos / total_seconds) * 100
+                        self.seekbar.set(min(progress, 100))
+                        
+                        mins_curr = int(current_pos // 60)
+                        secs_curr = int(current_pos % 60)
+                        self.time_current.configure(text=f"{mins_curr}:{secs_curr:02d}")
+                        
+                        mins_total = int(total_seconds // 60)
+                        secs_total = int(total_seconds % 60)
+                        self.time_total.configure(text=f"{mins_total}:{secs_total:02d}")
+                except Exception as e:
+                    pass
         except Exception as e:
-            print(f"[ERROR] check_song_ended: {e}")
+            pass
         
         self.after(100, self.check_song_ended)
 
@@ -220,12 +258,15 @@ class PageUser(ctk.CTkFrame):
                 song = self.library_items[line_number]
                 
                 def update_status(msg):
-                    self.current_label.configure(text=f"♪ {song.title}")
+                    self.current_label.configure(text=f"{song.title}")
                     self.is_playing_state = True
                     self.play_pause_btn.configure(text="⏸")
                 
                 msg = controller.player.play_song(song, callback=update_status)
-                self.current_label.configure(text=f"⏳ {song.title}")
+                self.current_label.configure(text=f"{song.title}")
+                self.seekbar.set(0)
+                self.time_current.configure(text="0:00")
+                self.time_total.configure(text=song.duration)
                 self.is_playing_state = True
                 self.play_pause_btn.configure(text="⏸")
         except:
@@ -239,8 +280,9 @@ class PageUser(ctk.CTkFrame):
         while art:
             song = art.songs_head
             while song:
+                album_info = f" • {song.album}" if song.album else ""
                 text = (f"{song.id}. {song.title} — {song.duration} "
-                    f"({art.artist_name}) [{song.genre}]\n")
+                    f"({art.artist_name}){album_info} [{song.genre}]\n")
                 self.library_box.insert("end", text)
                 self.library_items.append(song)
                 song = song.next
@@ -291,12 +333,15 @@ class PageUser(ctk.CTkFrame):
         
         if song:
             def update_status(msg):
-                self.current_label.configure(text=f"♪ {song.title}")
+                self.current_label.configure(text=f"{song.title}")
                 self.is_playing_state = True
                 self.play_pause_btn.configure(text="⏸")
             
             msg = controller.player.play_song(song, callback=update_status)
-            self.current_label.configure(text=f"⏳ {song.title}")
+            self.current_label.configure(text=f"{song.title}")
+            self.seekbar.set(0)
+            self.time_current.configure(text="0:00")
+            self.time_total.configure(text=song.duration)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
     
@@ -329,6 +374,22 @@ class PageUser(ctk.CTkFrame):
     def change_volume(self, controller, value):
         volume = float(value) / 100
         controller.player.set_volume(volume)
+    
+    def on_seek(self, controller, value):
+        if controller.player.current_song and controller.player.is_playing:
+            duration_str = controller.player.current_song.duration
+            try:
+                parts = duration_str.split(":")
+                if len(parts) == 2:
+                    total_seconds = int(parts[0]) * 60 + int(parts[1])
+                else:
+                    total_seconds = 180
+                
+                seek_pos = (float(value) / 100.0) * total_seconds
+                new_start_time = controller.player.start_time + (controller.player.get_pos() - seek_pos)
+                controller.player.start_time = new_start_time
+            except Exception as e:
+                print(f"[SEEK ERROR] {e}")
 
     def add_to_playlist(self, controller):
         song_id_str = self.song_id_entry.get().strip()
@@ -439,12 +500,15 @@ class PageUser(ctk.CTkFrame):
             song = self.library_items[self.selected_index]
             
             def update_status(msg):
-                self.current_label.configure(text=f"♪ {song.title}")
+                self.current_label.configure(text=f"{song.title}")
                 self.is_playing_state = True
                 self.play_pause_btn.configure(text="⏸")
             
             msg = controller.player.play_song(song, callback=update_status)
-            self.current_label.configure(text=f"⏳ {song.title}")
+            self.current_label.configure(text=f"{song.title}")
+            self.seekbar.set(0)
+            self.time_current.configure(text="0:00")
+            self.time_total.configure(text=song.duration)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
             print(f"[NEXT] Playing: {song.title}")
@@ -458,12 +522,15 @@ class PageUser(ctk.CTkFrame):
             song = self.library_items[self.selected_index]
             
             def update_status(msg):
-                self.current_label.configure(text=f"♪ {song.title}")
+                self.current_label.configure(text=f"{song.title}")
                 self.is_playing_state = True
                 self.play_pause_btn.configure(text="⏸")
             
             msg = controller.player.play_song(song, callback=update_status)
-            self.current_label.configure(text=f"⏳ {song.title}")
+            self.current_label.configure(text=f"{song.title}")
+            self.seekbar.set(0)
+            self.time_current.configure(text="0:00")
+            self.time_total.configure(text=song.duration)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
             print(f"[PREV] Playing: {song.title}")
