@@ -83,6 +83,7 @@ class PageUser(ctk.CTkFrame):
                                         text_color=SPOTIFY_WHITE, border_color=SPOTIFY_DARK_GRAY,
                                         corner_radius=10, font=("Consolas", 11))
         self.library_box.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        self.library_box.bind("<Button-1>", lambda e: self.on_library_click(controller, e))
         self.library_items = []
         self.selected_index = None
         self.refresh_library(controller)
@@ -211,8 +212,12 @@ class PageUser(ctk.CTkFrame):
                         if similar_songs:
                             import random
                             next_song = random.choice(similar_songs)
-                            msg = self.controller.player.play_song(next_song)
-                            self.current_label.configure(text=msg)
+                            
+                            def update_status(msg):
+                                self.current_label.configure(text=f"♪ {next_song.title}")
+                            
+                            msg = self.controller.player.play_song(next_song, callback=update_status)
+                            self.current_label.configure(text=f"⏳ {next_song.title}")
                             self.seekbar.set(0)
             
             if self.controller.player.is_playing and self.controller.player.current_song:
@@ -241,6 +246,23 @@ class PageUser(ctk.CTkFrame):
         except:
             pass
         self.after(100, self.check_song_ended)
+
+    def on_library_click(self, controller, event):
+        try:
+            index = self.library_box.index("@%s,%s" % (event.x, event.y))
+            line_number = int(index.split('.')[0]) - 1
+            if 0 <= line_number < len(self.library_items):
+                self.selected_index = line_number
+                song = self.library_items[line_number]
+                
+                def update_status(msg):
+                    self.current_label.configure(text=f"♪ {song.title}")
+                
+                msg = controller.player.play_song(song, callback=update_status)
+                self.current_label.configure(text=f"⏳ {song.title}")
+                self.seekbar.set(0)
+        except:
+            pass
 
     def refresh_library(self, controller):
         self.library_box.configure(state="normal")
@@ -294,11 +316,19 @@ class PageUser(ctk.CTkFrame):
         return art.songs_head if art else None
 
     def play_selected(self, controller):
-        song = self.get_first_song(controller)
-        if song:
-            msg = controller.player.play_song(song)
-            self.current_label.configure(text=msg)
+        if self.selected_index is not None and 0 <= self.selected_index < len(self.library_items):
+            song = self.library_items[self.selected_index]
+        else:
+            song = self.get_first_song(controller)
             self.selected_index = 0
+        
+        if song:
+            def update_status(msg):
+                self.current_label.configure(text=f"♪ {song.title}")
+            
+            msg = controller.player.play_song(song, callback=update_status)
+            self.current_label.configure(text=f"⏳ {song.title}")
+            self.seekbar.set(0)
 
     def pause_resume(self, controller):
         if controller.player.is_paused:
@@ -422,8 +452,14 @@ class PageUser(ctk.CTkFrame):
         else:
             self.selected_index = min(self.selected_index + 1, len(self.library_items) - 1)
         if 0 <= self.selected_index < len(self.library_items):
-            msg = controller.player.play_song(self.library_items[self.selected_index])
-            self.current_label.configure(text=msg)
+            song = self.library_items[self.selected_index]
+            
+            def update_status(msg):
+                self.current_label.configure(text=f"♪ {song.title}")
+            
+            msg = controller.player.play_song(song, callback=update_status)
+            self.current_label.configure(text=f"⏳ {song.title}")
+            self.seekbar.set(0)
 
     def previous_song(self, controller):
         if self.selected_index is None: 
@@ -431,8 +467,14 @@ class PageUser(ctk.CTkFrame):
         else:
             self.selected_index = max(self.selected_index - 1, 0)
         if 0 <= self.selected_index < len(self.library_items):
-            msg = controller.player.play_song(self.library_items[self.selected_index])
-            self.current_label.configure(text=msg)
+            song = self.library_items[self.selected_index]
+            
+            def update_status(msg):
+                self.current_label.configure(text=f"♪ {song.title}")
+            
+            msg = controller.player.play_song(song, callback=update_status)
+            self.current_label.configure(text=f"⏳ {song.title}")
+            self.seekbar.set(0)
 
     def create_new_playlist(self, controller):
         from tkinter import simpledialog

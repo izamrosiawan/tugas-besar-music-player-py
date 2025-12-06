@@ -1,5 +1,8 @@
 import pygame
 import os
+import urllib.request
+import tempfile
+import threading
 
 pygame.mixer.init()
 
@@ -130,6 +133,9 @@ class MusicPlayer:
         pygame.mixer.music.set_volume(self.volume)
         
         pygame.mixer.music.set_endevent(pygame.USEREVENT)
+        
+        self.temp_dir = tempfile.gettempdir()
+        self.cached_files = {}
     
     @property
     def playlist(self):
@@ -153,8 +159,25 @@ class MusicPlayer:
         all_songs = self.get_all_songs()
         similar = [s for s in all_songs if s.genre == current_song.genre and s.id != current_song.id]
         return similar[:limit]
+    
+    def _download_and_play(self, song_node, url, callback=None):
+        try:
+            temp_file = os.path.join(self.temp_dir, f"music_{song_node.id}.mp3")
+            urllib.request.urlretrieve(url, temp_file)
+            self.cached_files[url] = temp_file
+            
+            pygame.mixer.music.load(temp_file)
+            pygame.mixer.music.play()
+            self.is_playing = True
+            self.is_paused = False
+            if callback:
+                callback(f"🎵 Memutar: {song_node.title}")
+        except Exception as e:
+            self.is_playing = False
+            if callback:
+                callback(f"⚠️ Error: {str(e)}")
 
-    def play_song(self, song_node):
+    def play_song(self, song_node, callback=None):
         if self.current_song:
             self.history.push(self.current_song)
         
@@ -162,18 +185,33 @@ class MusicPlayer:
         
         if song_node.file_path:
             try:
+                file_to_play = song_node.file_path
+                
                 if song_node.file_path.startswith('http://') or song_node.file_path.startswith('https://'):
-                    pygame.mixer.music.load(song_node.file_path)
-                elif os.path.exists(song_node.file_path):
-                    pygame.mixer.music.load(song_node.file_path)
-                else:
+                    if song_node.file_path in self.cached_files:
+                        file_to_play = self.cached_files[song_node.file_path]
+                        pygame.mixer.music.load(file_to_play)
+                        pygame.mixer.music.play()
+                        self.is_playing = True
+                        self.is_paused = False
+                        return f"🎵 Memutar: {song_node.title}"
+                    else:
+                        download_thread = threading.Thread(
+                            target=self._download_and_play,
+                            args=(song_node, song_node.file_path, callback),
+                            daemon=True
+                        )
+                        download_thread.start()
+                        return f"⏳ Memuat: {song_node.title}..."
+                elif not os.path.exists(song_node.file_path):
                     self.is_playing = False
                     return f"▶️ Memutar: {song_node.title} (file tidak ditemukan)"
-                
-                pygame.mixer.music.play()
-                self.is_playing = True
-                self.is_paused = False
-                return f"🎵 Memutar: {song_node.title}"
+                else:
+                    pygame.mixer.music.load(file_to_play)
+                    pygame.mixer.music.play()
+                    self.is_playing = True
+                    self.is_paused = False
+                    return f"🎵 Memutar: {song_node.title}"
             except Exception as e:
                 self.is_playing = False
                 return f"⚠️ Error memutar {song_node.title}: {str(e)}"
