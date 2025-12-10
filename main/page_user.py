@@ -341,7 +341,7 @@ class PageUser(ctk.CTkFrame):
             for event in pygame.event.get():
                 if event.type == pygame.USEREVENT:
                     print("[AUTO-PLAY] Song ended via USEREVENT")
-                    self.after(50, lambda: self.next_song(self.controller))
+                    self.next_song(self.controller)
                     return
             
             if self.controller.player.current_song:
@@ -370,16 +370,18 @@ class PageUser(ctk.CTkFrame):
                         self.time_total.configure(text=f"{mins_total}:{secs_total:02d}")
                         
                         # Auto-play jika sudah mendekati akhir
-                        if current_pos >= total_seconds - 0.5:
-                            print(f"[AUTO-PLAY] Song ended at {current_pos}/{total_seconds}")
+                        if current_pos >= total_seconds - 0.3:
+                            print(f"[AUTO-PLAY] Threshold: {current_pos:.1f}/{total_seconds}")
+                            self.controller.player.is_playing = False
                             pygame.mixer.music.stop()
-                            self.after(50, lambda: self.next_song(self.controller))
+                            self.next_song(self.controller)
                             return
                     
-                    # Backup check jika music sudah stop tapi masih ada current_song
-                    if is_playing and not pygame.mixer.music.get_busy() and current_pos > 1.0:
-                        print("[AUTO-PLAY] Song ended via get_busy")
-                        self.after(50, lambda: self.next_song(self.controller))
+                    # Backup check jika music sudah stop
+                    if is_playing and not pygame.mixer.music.get_busy() and current_pos > 0.5:
+                        print(f"[AUTO-PLAY] Get_busy: pos={current_pos:.1f}")
+                        self.controller.player.is_playing = False
+                        self.next_song(self.controller)
                         return
                         
                 except Exception as e:
@@ -741,11 +743,16 @@ class PageUser(ctk.CTkFrame):
         self.playlist_box.configure(state="disabled")
 
     def next_song(self, controller):
+        if not self.library_items:
+            print("[NEXT] No songs in library")
+            return
+            
         if self.selected_index is None:
-            self.selected_index = 0 if self.library_items else None
-            if self.selected_index is None: return
+            self.selected_index = 0
         else:
-            self.selected_index = min(self.selected_index + 1, len(self.library_items) - 1)
+            # Loop kembali ke awal jika sudah di akhir
+            self.selected_index = (self.selected_index + 1) % len(self.library_items)
+        
         if 0 <= self.selected_index < len(self.library_items):
             song = self.library_items[self.selected_index]
             artist_name = self.get_artist_name(controller, song)
@@ -764,7 +771,7 @@ class PageUser(ctk.CTkFrame):
             self.time_total.configure(text=song.duration)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
-            print(f"[NEXT] Playing: {song.title}")
+            print(f"[NEXT] Playing: {song.title} (index: {self.selected_index}/{len(self.library_items)-1})")
 
     def previous_song(self, controller):
         if self.selected_index is None: 

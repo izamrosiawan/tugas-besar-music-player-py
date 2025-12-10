@@ -1,8 +1,5 @@
 import pygame
 import os
-import urllib.request
-import tempfile
-import threading
 
 pygame.mixer.init()
 pygame.init()
@@ -159,8 +156,6 @@ class MusicPlayer:
         
         pygame.mixer.music.set_endevent(pygame.USEREVENT)
         
-        self.temp_dir = tempfile.gettempdir()
-        self.cached_files = {}
         self.start_time = 0
         self.pause_time = 0
     
@@ -178,31 +173,6 @@ class MusicPlayer:
                 curr_song = curr_song.next
             curr_artist = curr_artist.next
         return songs
-
-    def get_similar_songs(self, current_song, limit=5):
-        if not current_song:
-            return []
-        
-        all_songs = self.get_all_songs()
-        similar = [s for s in all_songs if s.genre == current_song.genre and s.id != current_song.id]
-        return similar[:limit]
-    
-    def _download_and_play(self, song_node, url, callback=None):
-        try:
-            temp_file = os.path.join(self.temp_dir, f"music_{song_node.id}.mp3")
-            urllib.request.urlretrieve(url, temp_file)
-            self.cached_files[url] = temp_file
-            
-            pygame.mixer.music.load(temp_file)
-            pygame.mixer.music.play()
-            self.is_playing = True
-            self.is_paused = False
-            if callback:
-                callback(f"🎵 Memutar: {song_node.title}")
-        except Exception as e:
-            self.is_playing = False
-            if callback:
-                callback(f"⚠️ Error: {str(e)}")
 
     def play_song(self, song_node, callback=None):
         import time
@@ -267,15 +237,6 @@ class MusicPlayer:
 
     def get_is_playing(self):
         return pygame.mixer.music.get_busy() and not self.is_paused
-    
-    def seek(self, position_seconds):
-        if self.is_playing or self.is_paused:
-            try:
-                pygame.mixer.music.set_pos(position_seconds)
-                return True
-            except:
-                return False
-        return False
     
     def get_pos(self):
         import time
