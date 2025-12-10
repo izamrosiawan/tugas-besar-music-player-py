@@ -338,15 +338,26 @@ class PageUser(ctk.CTkFrame):
     def check_song_ended(self):
         import pygame
         try:
+            # Check pygame events
             for event in pygame.event.get():
                 if event.type == pygame.USEREVENT:
-                    print("[AUTO-PLAY] Song ended via USEREVENT")
+                    print("[AUTO-PLAY] USEREVENT detected")
                     self.next_song(self.controller)
                     return
             
             if self.controller.player.current_song:
                 current_pos = self.controller.player.get_pos()
                 is_playing = self.controller.player.is_playing
+                is_busy = pygame.mixer.music.get_busy()
+                
+                # Debug log setiap 2 detik
+                if hasattr(self, '_debug_counter'):
+                    self._debug_counter += 1
+                else:
+                    self._debug_counter = 0
+                
+                if self._debug_counter % 20 == 0:  # setiap 2 detik
+                    print(f"[DEBUG] pos={current_pos:.1f}, is_playing={is_playing}, busy={is_busy}")
                 
                 duration_str = self.controller.player.current_song.duration
                 try:
@@ -356,8 +367,8 @@ class PageUser(ctk.CTkFrame):
                     else:
                         total_seconds = 180
                     
-                    # Update seekbar dan timer jika sedang playing dan user tidak drag
-                    if is_playing and total_seconds > 0 and current_pos >= 0 and not self.is_seeking:
+                    # SELALU update seekbar dan timer (tidak peduli is_playing)
+                    if total_seconds > 0 and current_pos >= 0 and not self.is_seeking:
                         progress = (current_pos / total_seconds) * 100
                         self.seekbar.set(min(progress, 100))
                         
@@ -368,21 +379,21 @@ class PageUser(ctk.CTkFrame):
                         mins_total = int(total_seconds // 60)
                         secs_total = int(total_seconds % 60)
                         self.time_total.configure(text=f"{mins_total}:{secs_total:02d}")
-                        
-                        # Auto-play jika sudah mendekati akhir
-                        if current_pos >= total_seconds - 0.3:
-                            print(f"[AUTO-PLAY] Threshold: {current_pos:.1f}/{total_seconds}")
-                            self.controller.player.is_playing = False
+                    
+                    # Auto-play: cek threshold waktu ATAU music stopped
+                    if is_playing or is_busy:
+                        # Trigger jika mendekati akhir
+                        if current_pos >= total_seconds - 0.5:
+                            print(f"[AUTO-PLAY] Threshold reached: {current_pos:.1f}/{total_seconds}")
                             pygame.mixer.music.stop()
                             self.next_song(self.controller)
                             return
-                    
-                    # Backup check jika music sudah stop
-                    if is_playing and not pygame.mixer.music.get_busy() and current_pos > 0.5:
-                        print(f"[AUTO-PLAY] Get_busy: pos={current_pos:.1f}")
-                        self.controller.player.is_playing = False
-                        self.next_song(self.controller)
-                        return
+                        
+                        # Trigger jika music stopped tapi posisi > 0
+                        if not is_busy and current_pos > 0.5:
+                            print(f"[AUTO-PLAY] Music stopped at pos={current_pos:.1f}")
+                            self.next_song(self.controller)
+                            return
                         
                 except Exception as e:
                     print(f"Error in check: {e}")
@@ -604,44 +615,58 @@ class PageUser(ctk.CTkFrame):
         controller.player.set_volume(volume)
     
     def start_seek(self):
+        """Mulai drag seekbar"""
         self.is_seeking = True
+        print("[SEEK] Start seeking")
     
     def end_seek(self, controller):
-        self.is_seeking = False
+        """Selesai drag seekbar"""
         value = self.seekbar.get()
+        print(f"[SEEK] End seeking at {value}%")
         self.perform_seek(controller, value)
+        self.is_seeking = False
     
     def perform_seek(self, controller, value):
-        if controller.player.current_song:
-            duration_str = controller.player.current_song.duration
-            try:
-                parts = duration_str.split(":")
-                if len(parts) == 2:
-                    total_seconds = int(parts[0]) * 60 + int(parts[1])
-                else:
-                    total_seconds = 180
-                
-                seek_seconds = (float(value) / 100.0) * total_seconds
-                
-                # Reload lagu dan play dari posisi baru
-                import pygame
-                import time
-                
-                if controller.player.is_playing or controller.player.is_paused:
-                    was_playing = controller.player.is_playing
-                    
-                    # Load ulang file
-                    pygame.mixer.music.load(controller.player.current_song.file_path)
-                    pygame.mixer.music.play(start=seek_seconds)
-                    
-                    # Update start_time untuk tracking yang benar
-                    controller.player.start_time = time.time() - seek_seconds
-                    controller.player.is_playing = was_playing
-                    controller.player.is_paused = False
-                    
-                    print(f"[SEEK] Jumped to {seek_seconds:.1f}s")
-            except Exception as e:
-                print(f"[SEEK ERROR] {e}")
+        """Lompat ke posisi tertentu dalam lagu"""
+        if not controller.player.current_song:
+            return
+            
+        duration_str = controller.player.current_song.duration
+        try:
+            parts = duration_str.split(":")
+            if len(parts) == 2:
+                total_seconds = int(parts[0]) * 60 + int(parts[1])
+            else:
+                total_seconds = 180
+            
+            seek_seconds = (float(value) / 100.0) * total_seconds
+            
+            # Reload lagu dan play dari posisi baru
+            import pygame
+            import time
+            
+            was_playing = controller.player.is_playing
+            
+            # Load ulang file dan play dari posisi
+            pygame.mixer.music.load(controller.player.current_song.file_path)
+            pygame.mixer.music.play(start=seek_seconds)
+            
+            # Update state
+            controller.player.start_time = time.time() - seek_seconds
+            controller.player.is_playing = True  # Selalu set True setelah seek
+            controller.player.is_paused = False
+            
+            # Update UI
+            if was_playing:
+                self.play_pause_btn.configure(text="⏸")
+                self.is_playing_state = True
+            
+            print(f"[SEEK] Jumped to {seek_seconds:.1f}s / {total_seconds}s, playing={controller.player.is_playing}")
+            
+        except Exception as e:
+            print(f"[SEEK ERROR] {e}")
+            import traceback
+            traceback.print_exc()
     
     def add_to_playlist(self, controller):
         song_id_str = self.song_id_entry.get().strip()
