@@ -84,6 +84,7 @@ class Playlist:
         self.name = name
         self.head = None
         self.tail = None
+        self.next = None
 
     def add_song(self, song):
         new_node = PlaylistNode(song)
@@ -99,6 +100,10 @@ class PlaylistManager:
     def __init__(self):
         self.playlists = []
         self.active_playlist = None
+    
+    @property
+    def head(self):
+        return self.playlists[0] if self.playlists else None
     
     def create_playlist(self, name):
         playlist = Playlist(name)
@@ -119,7 +124,6 @@ class PlaylistManager:
         return None
     
     def add_to_playlist(self, playlist_name, song):
-        """Add song to specific playlist"""
         playlist = self.get_playlist(playlist_name)
         if playlist:
             playlist.add_song(song)

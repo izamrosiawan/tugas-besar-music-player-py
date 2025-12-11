@@ -13,7 +13,6 @@ class PageUser(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, fg_color=SPOTIFY_BLACK)
         
-        # Header dengan tombol kembali dan search
         header = ctk.CTkFrame(self, height=60, fg_color=SPOTIFY_DARK_GRAY, corner_radius=0)
         header.pack(fill="x", padx=0, pady=0)
         
@@ -21,7 +20,6 @@ class PageUser(ctk.CTkFrame):
                     command=lambda: controller.show_frame("PageMenu"), 
                     fg_color=SPOTIFY_GRAY, hover_color="#3E3E3E").place(x=15, y=12)
 
-        # Search bar di header
         self.search_entry = ctk.CTkEntry(header, width=400, height=35, corner_radius=20,
                                         placeholder_text="🔍 Cari lagu, artis, atau album...",
                                         fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
@@ -32,12 +30,10 @@ class PageUser(ctk.CTkFrame):
         content = ctk.CTkFrame(self, fg_color=SPOTIFY_BLACK)
         content.pack(fill="both", expand=True, padx=15, pady=(10, 10))
         
-        # Configure equal column weights
         content.grid_columnconfigure(0, weight=1)
         content.grid_columnconfigure(1, weight=1)
         content.grid_columnconfigure(2, weight=1)
         
-        # Left: Playlist
         self.frame_playlist = ctk.CTkFrame(content, corner_radius=15, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_playlist.grid(row=0, column=0, sticky="nsew", padx=(0, 5))
         
@@ -54,7 +50,6 @@ class PageUser(ctk.CTkFrame):
         self.playlist_items = []
         self.refresh_playlist_list(controller)
 
-        # Middle: Library
         self.frame_library = ctk.CTkFrame(content, corner_radius=15, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_library.grid(row=0, column=1, sticky="nsew", padx=5)
         
@@ -79,7 +74,6 @@ class PageUser(ctk.CTkFrame):
         self.current_playlist_mode = None  # Track jika sedang di mode playlist
         self.refresh_library(controller)
 
-        # Right: Playlist Actions
         self.frame_playlist_action = ctk.CTkFrame(content, corner_radius=15, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_playlist_action.grid(row=0, column=2, sticky="nsew", padx=(5, 0))
         
@@ -88,35 +82,34 @@ class PageUser(ctk.CTkFrame):
         ctk.CTkLabel(action_header, text="⚡ Kelola Playlist", font=("Arial", 16, "bold"), 
                     text_color=SPOTIFY_WHITE).pack(side="left", padx=15, pady=10)
         
-        action_content = ctk.CTkFrame(self.frame_playlist_action, fg_color="transparent")
-        action_content.pack(fill="both", expand=True, padx=15, pady=10)
+        action_scrollable = ctk.CTkScrollableFrame(self.frame_playlist_action, fg_color="transparent", 
+                                                    height=450)
+        action_scrollable.pack(fill="both", expand=True, padx=10, pady=(0, 10))
         
-        # Create new playlist
-        ctk.CTkLabel(action_content, text="Nama Playlist Baru:", font=("Arial", 12), 
-                    text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(10, 5))
-        self.new_playlist_entry = ctk.CTkEntry(action_content, height=35, corner_radius=10,
-                                        placeholder_text="Masukkan nama...",
+        action_content = action_scrollable
+        
+        ctk.CTkLabel(action_content, text="📝 BUAT PLAYLIST BARU", font=("Arial", 11, "bold"), 
+                    text_color=SPOTIFY_GREEN).pack(anchor="w", pady=(5, 5))
+        
+        self.new_playlist_entry = ctk.CTkEntry(action_content, height=32, corner_radius=10,
+                                        placeholder_text="Nama playlist baru...",
                                         fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
                                         text_color=SPOTIFY_WHITE)
-        self.new_playlist_entry.pack(fill="x", pady=(0, 10))
+        self.new_playlist_entry.pack(fill="x", pady=(0, 5))
         
-        ctk.CTkButton(action_content, text="➕ Buat Playlist Baru", height=40, corner_radius=10,
+        ctk.CTkButton(action_content, text="➕ Buat Playlist", height=35, corner_radius=10,
                     command=lambda: self.create_user_playlist(controller), 
                     fg_color=SPOTIFY_GREEN, hover_color="#1ed760", 
-                    font=("Arial", 13, "bold")).pack(fill="x", pady=5)
+                    font=("Arial", 11, "bold")).pack(fill="x", pady=(0, 10))
         
-        # Add song to playlist
-        ctk.CTkLabel(action_content, text="Nama Lagu:", font=("Arial", 12), 
-                    text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(20, 5))
-        self.song_name_entry = ctk.CTkEntry(action_content, height=35, corner_radius=10,
-                                        placeholder_text="Masukkan nama lagu...",
-                                        fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
-                                        text_color=SPOTIFY_WHITE)
-        self.song_name_entry.pack(fill="x", pady=(0, 10))
+        ctk.CTkLabel(action_content, text="━" * 25, 
+                    text_color=SPOTIFY_GRAY).pack(pady=5)
         
-        # Playlist selector
-        ctk.CTkLabel(action_content, text="Pilih Playlist:", font=("Arial", 12), 
-                    text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 5))
+        ctk.CTkLabel(action_content, text="🎵 KELOLA PLAYLIST", font=("Arial", 11, "bold"), 
+                    text_color=SPOTIFY_GREEN).pack(anchor="w", pady=(5, 5))
+        
+        ctk.CTkLabel(action_content, text="Pilih Playlist:", font=("Arial", 10), 
+                    text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(0, 2))
         
         self.user_playlist_dropdown = ctk.CTkOptionMenu(
             action_content, 
@@ -125,59 +118,64 @@ class PageUser(ctk.CTkFrame):
             button_color=SPOTIFY_GREEN,
             button_hover_color="#1ed760",
             dropdown_fg_color=SPOTIFY_GRAY,
-            font=("Arial", 11))
-        self.user_playlist_dropdown.pack(fill="x", pady=(0, 10))
+            font=("Arial", 10))
+        self.user_playlist_dropdown.pack(fill="x", pady=(0, 8))
         
-        ctk.CTkButton(action_content, text="➕ Tambah ke Playlist", height=40, corner_radius=10,
+        ctk.CTkLabel(action_content, text="Nama Lagu:", font=("Arial", 10), 
+                    text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(0, 2))
+        self.song_name_entry = ctk.CTkEntry(action_content, height=32, corner_radius=10,
+                                        placeholder_text="Cari nama lagu untuk ditambah...",
+                                        fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
+                                        text_color=SPOTIFY_WHITE)
+        self.song_name_entry.pack(fill="x", pady=(0, 5))
+        
+        ctk.CTkButton(action_content, text="➕ Tambah Lagu", height=35, corner_radius=10,
                     command=lambda: self.add_to_user_playlist(controller), 
                     fg_color=SPOTIFY_GREEN, hover_color="#1ed760", 
-                    font=("Arial", 13, "bold")).pack(fill="x", pady=5)
+                    font=("Arial", 10, "bold")).pack(fill="x", pady=2)
         
-        ctk.CTkButton(action_content, text="🗑️ Hapus Playlist", height=40, corner_radius=10,
+        ctk.CTkButton(action_content, text="➖ Hapus Lagu", height=35, corner_radius=10,
+                    command=lambda: self.remove_from_user_playlist(controller), 
+                    fg_color="#FF6B6B", hover_color="#FF4444",
+                    font=("Arial", 10, "bold")).pack(fill="x", pady=2)
+        
+        ctk.CTkButton(action_content, text="🗑️ Hapus Playlist", height=35, corner_radius=10,
                     command=lambda: self.delete_user_playlist(controller), 
                     fg_color="#8B0000", hover_color="#A52A2A",
-                    font=("Arial", 13, "bold")).pack(fill="x", pady=5)
+                    font=("Arial", 10, "bold")).pack(fill="x", pady=(2, 5))
         
-        self.status_label = ctk.CTkLabel(action_content, text="", font=("Arial", 11),
-                                        text_color=SPOTIFY_GREEN, wraplength=300)
-        self.status_label.pack(pady=15)
+        self.status_label = ctk.CTkLabel(action_content, text="", font=("Arial", 9),
+                                        text_color=SPOTIFY_GREEN, wraplength=280)
+        self.status_label.pack(pady=5)
 
-        # Bottom: Player Controls (Fixed at bottom)
         self.frame_control = ctk.CTkFrame(self, height=90, fg_color=SPOTIFY_DARK_GRAY, corner_radius=0)
         self.frame_control.pack(side="bottom", fill="x", padx=0, pady=0)
         
-        # Seekbar di paling atas (read-only, tidak bisa di-drag)
         self.seekbar = ctk.CTkProgressBar(self.frame_control, height=4,
                                          progress_color=SPOTIFY_WHITE, fg_color="#4d4d4d")
         self.seekbar.set(0)
         self.seekbar.pack(fill="x", padx=20, pady=0)
         
-        # Main control row dengan 3 section
         main_row = ctk.CTkFrame(self.frame_control, fg_color="transparent")
         main_row.pack(fill="x", padx=15, pady=(8, 8))
         
-        # LEFT: Song Info 
         left_section = ctk.CTkFrame(main_row, fg_color="transparent", width=350)
         left_section.pack(side="left", fill="both", anchor="w")
         left_section.pack_propagate(False)
         
-        # Song title
         self.current_label = ctk.CTkLabel(left_section, text="", 
                                         font=("Arial", 13, "bold"), text_color=SPOTIFY_WHITE, 
                                         anchor="w")
         self.current_label.pack(anchor="w", side="top")
         
-        # Artist name
         self.artist_label = ctk.CTkLabel(left_section, text="", 
                                         font=("Arial", 11), text_color=SPOTIFY_LIGHT_GRAY, 
                                         anchor="w")
         self.artist_label.pack(anchor="w", side="top")
         
-        # CENTER: Control Buttons (fixed center)
         center_section = ctk.CTkFrame(main_row, fg_color="transparent")
         center_section.pack(side="left", expand=True)
         
-        # Buttons row
         btn_row = ctk.CTkFrame(center_section, fg_color="transparent")
         btn_row.pack(pady=(0, 5), anchor="center")
         
@@ -199,7 +197,6 @@ class PageUser(ctk.CTkFrame):
         
         self.is_playing_state = False
         
-        # Timer row (centered)
         timer_row = ctk.CTkFrame(center_section, fg_color="transparent")
         timer_row.pack(anchor="center")
         
@@ -211,10 +208,9 @@ class PageUser(ctk.CTkFrame):
                     font=("Arial", 10), text_color=SPOTIFY_LIGHT_GRAY).pack(side="left")
         
         self.time_total = ctk.CTkLabel(timer_row, text="0:00", 
-                                      font=("Arial", 10), text_color=SPOTIFY_LIGHT_GRAY)
+                                    font=("Arial", 10), text_color=SPOTIFY_LIGHT_GRAY)
         self.time_total.pack(side="left", padx=5)
         
-        # RIGHT: Volume Control (same width as left for balance)
         right_section = ctk.CTkFrame(main_row, fg_color="transparent", width=350)
         right_section.pack(side="right", fill="both", anchor="e")
         right_section.pack_propagate(False)
@@ -237,26 +233,19 @@ class PageUser(ctk.CTkFrame):
         self.controller = controller
         self.check_song_ended()
     
-    # ===== FUNGSI PLAYLIST MANAGEMENT =====
     def create_user_playlist(self, controller):
-        """Membuat playlist baru dari user"""
         playlist_name = self.new_playlist_entry.get().strip()
         if not playlist_name:
             messagebox.showwarning("Input Kosong", "Masukkan nama playlist!")
             return
         
-        # Tambahkan ke sistem
         controller.player.playlist_manager.create_playlist(playlist_name)
-        
-        # Update dropdown
+        self.refresh_playlist_list(controller)
         self.update_playlist_dropdown(controller)
-        
-        # Clear input
         self.new_playlist_entry.delete(0, 'end')
         messagebox.showinfo("Sukses", f"Playlist '{playlist_name}' berhasil dibuat!")
     
     def add_to_user_playlist(self, controller):
-        """Menambahkan lagu ke playlist user by nama"""
         song_name = self.song_name_entry.get().strip().lower()
         if not song_name:
             messagebox.showerror("Error", "Masukkan nama lagu!")
@@ -267,7 +256,6 @@ class PageUser(ctk.CTkFrame):
             messagebox.showwarning("Pilih Playlist", "Pilih playlist tujuan terlebih dahulu!")
             return
         
-        # Cari lagu by nama
         art = controller.player.library.artists_head
         song_found = None
         
@@ -286,37 +274,78 @@ class PageUser(ctk.CTkFrame):
             messagebox.showerror("Error", f"Lagu '{song_name}' tidak ditemukan!")
             return
         
-        # Add to playlist
         controller.player.playlist_manager.add_to_playlist(playlist_name, song_found)
+        self.refresh_playlist_list(controller)
         self.song_name_entry.delete(0, 'end')
         messagebox.showinfo("Sukses", f"Lagu '{song_found.title}' ditambahkan ke '{playlist_name}'!")
     
     def delete_user_playlist(self, controller):
-        """Menghapus playlist user"""
         playlist_name = self.user_playlist_dropdown.get()
-        if playlist_name == "Pilih Playlist":
-            messagebox.showwarning("Pilih Playlist", "Pilih playlist yang akan dihapus!")
+        if playlist_name == "Pilih Playlist" or playlist_name == "My Playlist":
+            messagebox.showwarning("Tidak Bisa Hapus", "Pilih playlist yang ingin dihapus (My Playlist tidak bisa dihapus)!")
             return
         
-        # Konfirmasi
         confirm = messagebox.askyesno("Konfirmasi", f"Hapus playlist '{playlist_name}'?")
         if not confirm:
             return
         
-        # Hapus dari sistem
         controller.player.playlist_manager.delete_playlist(playlist_name)
         
-        # Update dropdown
+        self.refresh_playlist_list(controller)
         self.update_playlist_dropdown(controller)
         messagebox.showinfo("Sukses", f"Playlist '{playlist_name}' berhasil dihapus!")
     
+    def remove_from_user_playlist(self, controller):
+        song_name = self.song_name_entry.get().strip().lower()
+        if not song_name:
+            messagebox.showerror("Error", "Masukkan nama lagu yang ingin dihapus!")
+            return
+        
+        playlist_name = self.user_playlist_dropdown.get()
+        if playlist_name == "Pilih Playlist":
+            messagebox.showwarning("Pilih Playlist", "Pilih playlist terlebih dahulu!")
+            return
+        
+        playlist = controller.player.playlist_manager.get_playlist(playlist_name)
+        if not playlist or not playlist.head:
+            messagebox.showerror("Error", "Playlist kosong!")
+            return
+        
+        if song_name in playlist.head.song.title.lower():
+            song_title = playlist.head.song.title
+            if playlist.head == playlist.tail:
+                playlist.head = playlist.tail = None
+            else:
+                playlist.head = playlist.head.next
+                if playlist.head:
+                    playlist.head.prev = None
+            self.refresh_playlist_list(controller)
+            self.song_name_entry.delete(0, 'end')
+            messagebox.showinfo("Sukses", f"Lagu '{song_title}' dihapus dari '{playlist_name}'!")
+            return
+        
+        curr = playlist.head
+        while curr:
+            if song_name in curr.song.title.lower():
+                song_title = curr.song.title
+                if curr.prev:
+                    curr.prev.next = curr.next
+                if curr.next:
+                    curr.next.prev = curr.prev
+                if curr == playlist.tail:
+                    playlist.tail = curr.prev
+                self.refresh_playlist_list(controller)
+                self.song_name_entry.delete(0, 'end')
+                messagebox.showinfo("Sukses", f"Lagu '{song_title}' dihapus dari '{playlist_name}'!")
+                return
+            curr = curr.next
+        
+        messagebox.showerror("Error", f"Lagu '{song_name}' tidak ditemukan di playlist '{playlist_name}'!")
+    
     def update_playlist_dropdown(self, controller):
-        """Update dropdown dengan daftar playlist terbaru"""
         playlist_names = []
-        current = controller.player.playlist_manager.head
-        while current:
-            playlist_names.append(current.name)
-            current = current.next
+        for playlist in controller.player.playlist_manager.playlists:
+            playlist_names.append(playlist.name)
         
         if playlist_names:
             self.user_playlist_dropdown.configure(values=playlist_names)
@@ -325,12 +354,10 @@ class PageUser(ctk.CTkFrame):
             self.user_playlist_dropdown.configure(values=["Pilih Playlist"])
             self.user_playlist_dropdown.set("Pilih Playlist")
     
-    # ===== FUNGSI GENRE PLAYLIST =====
 
     def check_song_ended(self):
         import pygame
         try:
-            # Check pygame events
             for event in pygame.event.get():
                 if event.type == pygame.USEREVENT:
                     print("[AUTO-PLAY] USEREVENT detected")
@@ -350,7 +377,6 @@ class PageUser(ctk.CTkFrame):
                     else:
                         total_seconds = 180
                     
-                    # SELALU update seekbar dan timer
                     if total_seconds > 0 and current_pos >= 0:
                         progress = (current_pos / total_seconds)
                         self.seekbar.set(min(progress, 1.0))
@@ -363,16 +389,13 @@ class PageUser(ctk.CTkFrame):
                         secs_total = int(total_seconds % 60)
                         self.time_total.configure(text=f"{mins_total}:{secs_total:02d}")
                     
-                    # Auto-play: cek jika music playing
                     if is_playing and is_busy:
-                        # Trigger jika mendekati akhir (0.2s sebelum habis)
                         if current_pos >= total_seconds - 0.2:
                             print(f"[AUTO-PLAY] Next song at {current_pos:.1f}/{total_seconds}s")
                             pygame.mixer.music.stop()
                             self.next_song(self.controller)
                             return
                     
-                    # Backup: jika music stopped tapi masih ada current_song
                     elif is_playing and not is_busy and current_pos > 1.0:
                         print(f"[AUTO-PLAY] Song ended (busy=False at {current_pos:.1f}s)")
                         self.next_song(self.controller)
@@ -427,7 +450,23 @@ class PageUser(ctk.CTkFrame):
         self.playlist_list_box.delete("1.0", "end")
         self.playlist_items = []
         
-        # Kumpulkan semua genre unik
+        idx = 1
+        
+        for playlist in controller.player.playlist_manager.playlists:
+            song_count = 0
+            curr = playlist.head
+            while curr:
+                song_count += 1
+                curr = curr.next
+            
+            text = f"{idx}. 📋 {playlist.name} ({song_count} lagu)\n"
+            self.playlist_list_box.insert("end", text)
+            self.playlist_items.append({"type": "user", "playlist": playlist})
+            idx += 1
+        
+        if idx > 1:
+            self.playlist_list_box.insert("end", "\n")
+        
         genres = {}
         art = controller.player.library.artists_head
         while art:
@@ -440,12 +479,10 @@ class PageUser(ctk.CTkFrame):
                 song = song.next
             art = art.next
         
-        # Tampilkan playlist per genre
-        idx = 1
         for genre, songs in genres.items():
             text = f"{idx}. 🎧 {genre} Playlist ({len(songs)} lagu)\n"
             self.playlist_list_box.insert("end", text)
-            self.playlist_items.append({"genre": genre, "songs": songs})
+            self.playlist_items.append({"type": "genre", "genre": genre, "songs": songs})
             idx += 1
         
         self.playlist_list_box.configure(state="disabled")
@@ -456,20 +493,65 @@ class PageUser(ctk.CTkFrame):
             line_number = int(index.split('.')[0]) - 1
             if 0 <= line_number < len(self.playlist_items):
                 playlist_data = self.playlist_items[line_number]
-                self.show_playlist_songs(controller, playlist_data)
-                print(f"[CLICK] Selected playlist: {playlist_data['genre']}")
+                if playlist_data["type"] == "user":
+                    self.show_user_playlist_songs(controller, playlist_data["playlist"])
+                else:
+                    self.show_playlist_songs(controller, playlist_data)
+                print(f"[CLICK] Selected playlist: {playlist_data}")
         except Exception as e:
             print(f"[ERROR] on_playlist_click: {e}")
+    
+    def show_user_playlist_songs(self, controller, playlist):
+        self.current_playlist_mode = f"user_{playlist.name}"
+        self.selected_index = None
+        
+        self.library_box.configure(state="normal")
+        self.library_box.delete("1.0", "end")
+        self.library_items = []
+        
+        self.library_box.insert("end", f"📋 {playlist.name}\n\n", "header")
+        
+        current_song_id = controller.player.current_song.id if controller.player.current_song else None
+        
+        curr = playlist.head
+        while curr:
+            song = curr.song
+            artist_name = self.get_artist_name(controller, song)
+            
+            playing_indicator = "🔊 " if song.id == current_song_id else "   "
+            
+            album_info = f" • {song.album}" if song.album else ""
+            text = f"{playing_indicator}{song.id}. {song.title} — {song.duration} ({artist_name}){album_info}\n"
+            self.library_box.insert("end", text)
+            self.library_items.append(song)
+            curr = curr.next
+        
+        self.library_box.configure(state="disabled")
+        
+        if self.library_items:
+            self.selected_index = 0
+            first_song = self.library_items[0]
+            artist_name = self.get_artist_name(controller, first_song)
+            
+            controller.player.play_song(first_song)
+            
+            self.current_label.configure(text=first_song.title)
+            self.artist_label.configure(text=artist_name)
+            self.seekbar.set(0)
+            self.time_current.configure(text="0:00")
+            self.time_total.configure(text=first_song.duration)
+            self.is_playing_state = True
+            self.play_pause_btn.configure(text="⏸")
+            
+            self.update_library_highlight(controller)
     
     def show_playlist_songs(self, controller, playlist_data):
         genre = playlist_data["genre"]
         songs = playlist_data["songs"]
         
-        # Set mode playlist
         self.current_playlist_mode = genre
         self.selected_index = None  # Reset index saat ganti playlist
         
-        # Update library box untuk menampilkan lagu dari playlist
         self.library_box.configure(state="normal")
         self.library_box.delete("1.0", "end")
         self.library_items = []
@@ -479,10 +561,8 @@ class PageUser(ctk.CTkFrame):
         current_song_id = controller.player.current_song.id if controller.player.current_song else None
         
         for song in songs:
-            # Cari artist name
             artist_name = self.get_artist_name(controller, song)
             
-            # Tambah indicator jika lagu sedang playing
             playing_indicator = "🔊 " if song.id == current_song_id else "   "
             
             album_info = f" • {song.album}" if song.album else ""
@@ -493,16 +573,13 @@ class PageUser(ctk.CTkFrame):
         self.library_box.configure(state="disabled")
         print(f"[PLAYLIST] Mode: {genre} ({len(songs)} lagu, {len(self.library_items)} items loaded)")
         
-        # Auto-play lagu pertama dari playlist
         if self.library_items:
             self.selected_index = 0
             first_song = self.library_items[0]
             artist_name = self.get_artist_name(controller, first_song)
             
-            # Play lagu pertama
             controller.player.play_song(first_song)
             
-            # Update UI
             self.current_label.configure(text=first_song.title)
             self.artist_label.configure(text=artist_name)
             self.seekbar.set(0)
@@ -513,11 +590,9 @@ class PageUser(ctk.CTkFrame):
             
             print(f"[AUTO-START] Playing: {first_song.title} ({artist_name})")
             
-            # Update visual indicator
             self.update_library_highlight(controller)
     
     def update_library_highlight(self, controller):
-        """Update icon playing di library box"""
         if not controller.player.current_song:
             return
         
@@ -530,12 +605,9 @@ class PageUser(ctk.CTkFrame):
         new_content = []
         for line in lines:
             if line.strip():
-                # Hapus existing indicator
                 clean_line = line.replace("🔊 ", "   ")
                 
-                # Cek apakah ini lagu yang sedang playing
                 if f"{current_song_id}." in clean_line:
-                    # Tambah indicator
                     clean_line = "🔊 " + clean_line[3:]
                 
                 new_content.append(clean_line)
@@ -547,11 +619,9 @@ class PageUser(ctk.CTkFrame):
         self.library_box.configure(state="disabled")
     
     def refresh_library(self, controller):
-        # Reset mode playlist
         self.current_playlist_mode = None
         self.selected_index = None
         
-        # Clear dan reset library box
         self.library_box.configure(state="normal")
         self.library_box.delete("1.0", "end")
         self.library_items = []
@@ -564,7 +634,6 @@ class PageUser(ctk.CTkFrame):
             while song:
                 album_info = f" • {song.album}" if song.album else ""
                 
-                # Tambah indicator jika lagu sedang playing
                 playing_indicator = "🔊 " if song.id == current_song_id else "   "
                 
                 text = (f"{playing_indicator}{song.title} — {song.duration} "
@@ -662,20 +731,16 @@ class PageUser(ctk.CTkFrame):
     
     
     def add_to_playlist(self, controller):
-        song_id_str = self.song_id_entry.get().strip()
-        if not song_id_str:
-            return self.status_label.configure(text="Masukkan ID lagu!", text_color="#FF6B6B")
-        try:
-            song_id = int(song_id_str)
-        except ValueError:
-            return self.status_label.configure(text="ID harus angka!", text_color="#FF6B6B")
+        song_name = self.song_name_old_entry.get().strip().lower()
+        if not song_name:
+            return self.status_label.configure(text="Masukkan nama lagu!", text_color="#FF6B6B")
         
         found_song = None
         art = controller.player.library.artists_head
         while art and not found_song:
             song = art.songs_head
             while song:
-                if str(song.id) == str(song_id):
+                if song_name in song.title.lower():
                     found_song = song
                     break
                 song = song.next
@@ -687,28 +752,25 @@ class PageUser(ctk.CTkFrame):
             self.status_label.configure(
                 text=f"'{found_song.title}' ditambahkan!", 
                 text_color=SPOTIFY_GREEN)
-            self.song_id_entry.delete(0, 'end')
+            self.song_name_old_entry.delete(0, 'end')
         else:
             self.status_label.configure(
-                text=f"Lagu ID {song_id} tidak ditemukan!", 
+                text=f"Lagu '{song_name}' tidak ditemukan!", 
                 text_color="#FF6B6B")
 
     def remove_from_playlist(self, controller):
-        song_id_str = self.song_id_entry.get().strip()
-        if not song_id_str:
+        song_name = self.song_name_old_entry.get().strip().lower()
+        if not song_name:
             return self.status_label.configure(
-                text="Masukkan ID lagu yang ingin dihapus!", 
+                text="Masukkan nama lagu yang ingin dihapus!", 
                 text_color="#FF6B6B")
-        try:
-            song_id = int(song_id_str)
-        except ValueError:
-            return self.status_label.configure(text="ID harus angka!", text_color="#FF6B6B")
         
         playlist = controller.player.playlist
         if not playlist.head:
             return self.status_label.configure(text="Playlist kosong!", text_color="#FF6B6B")
         
-        if str(playlist.head.song.id) == str(song_id):
+        if song_name in playlist.head.song.title.lower():
+            song_title = playlist.head.song.title
             if playlist.head == playlist.tail:
                 playlist.head = playlist.tail = None
             else:
@@ -717,14 +779,15 @@ class PageUser(ctk.CTkFrame):
                     playlist.head.prev = None
             self.refresh_playlist(controller)
             self.status_label.configure(
-                text=f"Lagu ID {song_id} dihapus dari playlist!", 
+                text=f"'{song_title}' dihapus dari playlist!", 
                 text_color=SPOTIFY_GREEN)
-            self.song_id_entry.delete(0, 'end')
+            self.song_name_old_entry.delete(0, 'end')
             return
         
         curr = playlist.head
         while curr:
-            if str(curr.song.id) == str(song_id):
+            if song_name in curr.song.title.lower():
+                song_title = curr.song.title
                 if curr.prev:
                     curr.prev.next = curr.next
                 if curr.next:
@@ -733,13 +796,13 @@ class PageUser(ctk.CTkFrame):
                     playlist.tail = curr.prev
                 self.refresh_playlist(controller)
                 self.status_label.configure(
-                    text=f"Lagu ID {song_id} dihapus dari playlist!", 
+                    text=f"'{song_title}' dihapus dari playlist!", 
                     text_color=SPOTIFY_GREEN)
-                self.song_id_entry.delete(0, 'end')
+                self.song_name_old_entry.delete(0, 'end')
                 return
             curr = curr.next
         self.status_label.configure(
-            text=f"Lagu ID {song_id} tidak ada di playlist!", 
+            text=f"Lagu '{song_name}' tidak ada di playlist!", 
             text_color="#FF6B6B")
 
     def clear_playlist(self, controller):
@@ -771,11 +834,9 @@ class PageUser(ctk.CTkFrame):
         if self.selected_index is None:
             self.selected_index = 0
         else:
-            # Cari lagu berikutnya dari artist yang sama
             current_song = self.library_items[self.selected_index]
             current_artist = self.get_artist_name(controller, current_song)
             
-            # Mulai dari index berikutnya, cari lagu dari artist yang sama
             next_index = None
             for i in range(self.selected_index + 1, len(self.library_items)):
                 song = self.library_items[i]
@@ -783,7 +844,6 @@ class PageUser(ctk.CTkFrame):
                     next_index = i
                     break
             
-            # Jika tidak ada lagu lagi dari artist yang sama, cari dari awal
             if next_index is None:
                 for i in range(0, self.selected_index):
                     song = self.library_items[i]
@@ -791,7 +851,6 @@ class PageUser(ctk.CTkFrame):
                         next_index = i
                         break
             
-            # Jika masih tidak ada (hanya 1 lagu dari artist ini), loop ke lagu yang sama
             if next_index is None:
                 next_index = self.selected_index
             
@@ -816,13 +875,11 @@ class PageUser(ctk.CTkFrame):
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
             
-            # Reset position tracking
             controller.player.start_time = time.time()
             controller.player.paused_position = 0
             
             print(f"[NEXT] Playing: {song.title} ({artist_name}) [index: {self.selected_index}/{len(self.library_items)-1}]")
             
-            # Update visual indicator di library
             self.update_library_highlight(controller)
 
     def previous_song(self, controller):

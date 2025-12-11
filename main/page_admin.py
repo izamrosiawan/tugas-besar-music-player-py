@@ -11,7 +11,6 @@ class PageAdmin(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, fg_color=SPOTIFY_BLACK)
         
-        # Header
         header = ctk.CTkFrame(self, height=60, fg_color=SPOTIFY_DARK_GRAY, corner_radius=0)
         header.pack(fill="x", padx=0, pady=0)
         
@@ -22,11 +21,9 @@ class PageAdmin(ctk.CTkFrame):
         ctk.CTkLabel(header, text="⚙️ Admin Panel - Kelola Musik", font=("Arial", 18, "bold"),
                     text_color=SPOTIFY_WHITE).place(x=450, y=15)
         
-        # Content
         content = ctk.CTkFrame(self, fg_color=SPOTIFY_BLACK)
         content.pack(fill="both", expand=True, padx=15, pady=(10, 20))
 
-        # Left: Library Display
         self.frame_library = ctk.CTkFrame(content, width=720, corner_radius=15, fg_color=SPOTIFY_DARK_GRAY)
         self.frame_library.pack(side="left", fill="both", expand=True, padx=(0, 8))
         
@@ -52,7 +49,6 @@ class PageAdmin(ctk.CTkFrame):
         form_content = ctk.CTkFrame(self.frame_detail, fg_color="transparent")
         form_content.pack(fill="both", expand=True, padx=15, pady=10)
         
-        # Form fields dengan styling lebih baik
         ctk.CTkLabel(form_content, text="Artis:", font=("Arial", 12, "bold"), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
         self.artist_entry = ctk.CTkEntry(form_content, height=35, corner_radius=10,
@@ -73,11 +69,11 @@ class PageAdmin(ctk.CTkFrame):
         
         id_frame = ctk.CTkFrame(row1, fg_color="transparent")
         id_frame.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        ctk.CTkLabel(id_frame, text="ID (opsional):", font=("Arial", 12, "bold"), 
+        ctk.CTkLabel(id_frame, text="Nama Lagu Lama (untuk update/delete):", font=("Arial", 10, "bold"), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
         self.id_entry = ctk.CTkEntry(id_frame, height=35, corner_radius=10,
                                     fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
-                                    text_color=SPOTIFY_WHITE, placeholder_text="Auto...")
+                                    text_color=SPOTIFY_WHITE, placeholder_text="Cari nama lagu...")
         self.id_entry.pack(fill="x")
         
         duration_frame = ctk.CTkFrame(row1, fg_color="transparent")
@@ -96,7 +92,6 @@ class PageAdmin(ctk.CTkFrame):
                                     text_color=SPOTIFY_WHITE, placeholder_text="Judul lagu...")
         self.title_entry.pack(fill="x", pady=(0, 10))
         
-        # File upload section
         ctk.CTkLabel(form_content, text="File Audio (opsional):", font=("Arial", 12, "bold"), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(5, 2))
         
@@ -118,7 +113,6 @@ class PageAdmin(ctk.CTkFrame):
                                     text_color="#FF6B6B", wraplength=500)
         self.error_label.pack(pady=10)
         
-        # Action buttons
         btn_frame = ctk.CTkFrame(form_content, fg_color="transparent")
         btn_frame.pack(fill="x", pady=10)
         
@@ -157,7 +151,7 @@ class PageAdmin(ctk.CTkFrame):
         while art:
             song = art.songs_head
             while song:
-                text = (f"{song.id}. {song.title} — {song.duration} "
+                text = (f"{song.title} — {song.duration} "
                     f"({art.artist_name}) [{song.genre}]\n")
                 self.admin_library_box.insert("end", text)
                 song = song.next
@@ -226,20 +220,18 @@ class PageAdmin(ctk.CTkFrame):
         self.error_label.configure(text="Lagu berhasil ditambahkan!", text_color=SPOTIFY_GREEN)
 
     def delete_song(self, controller):
-        song_id_str = self.id_entry.get().strip()
-        if not song_id_str:
+        song_name = self.title_entry.get().strip().lower()
+        if not song_name:
             return self.error_label.configure(
-                text="Masukkan ID lagu yang ingin dihapus!", 
+                text="Masukkan nama lagu yang ingin dihapus!", 
                 text_color="#FF6B6B")
-        try:
-            song_id = int(song_id_str)
-        except ValueError:
-            return self.error_label.configure(text="ID harus berupa angka!", text_color="#FF6B6B")
         
         lib, found = controller.player.library, False
+        deleted_title = ""
         art = lib.artists_head
         while art and not found:
-            if art.songs_head and str(art.songs_head.id) == str(song_id):
+            if art.songs_head and song_name in art.songs_head.title.lower():
+                deleted_title = art.songs_head.title
                 art.songs_head = art.songs_head.next
                 found = True
                 break
@@ -247,7 +239,8 @@ class PageAdmin(ctk.CTkFrame):
             if prev_song:
                 curr_song = prev_song.next
                 while curr_song:
-                    if str(curr_song.id) == str(song_id):
+                    if song_name in curr_song.title.lower():
+                        deleted_title = curr_song.title
                         prev_song.next = curr_song.next
                         found = True
                         break
@@ -259,38 +252,34 @@ class PageAdmin(ctk.CTkFrame):
             self.refresh_admin_library(controller)
             self.clear_form()
             self.error_label.configure(
-                text=f"Lagu ID {song_id} berhasil dihapus!", 
+                text=f"Lagu '{deleted_title}' berhasil dihapus!", 
                 text_color=SPOTIFY_GREEN)
         else:
             self.error_label.configure(
-                text=f"Lagu dengan ID {song_id} tidak ditemukan!", 
+                text=f"Lagu '{song_name}' tidak ditemukan!", 
                 text_color="#FF6B6B")
 
     def update_song(self, controller):
-        song_id_str = self.id_entry.get().strip()
-        if not song_id_str:
+        old_title = self.id_entry.get().strip().lower()
+        if not old_title:
             return self.error_label.configure(
-                text="Masukkan ID lagu yang ingin diperbarui!", 
+                text="Masukkan nama lagu yang ingin diperbarui di field ID!", 
                 text_color="#FF6B6B")
-        title = self.title_entry.get().strip()
+        new_title = self.title_entry.get().strip()
         duration = self.duration_entry.get().strip()
         genre = self.genre_entry.get().strip()
-        if not title:
-            return self.error_label.configure(text="Judul lagu wajib diisi!", text_color="#FF6B6B")
+        if not new_title:
+            return self.error_label.configure(text="Judul lagu baru wajib diisi!", text_color="#FF6B6B")
         if not duration:
             return self.error_label.configure(text="Durasi wajib diisi!", text_color="#FF6B6B")
-        try:
-            song_id = int(song_id_str)
-        except ValueError:
-            return self.error_label.configure(text="ID harus berupa angka!", text_color="#FF6B6B")
         
         lib, found = controller.player.library, False
         art = lib.artists_head
         while art and not found:
             song = art.songs_head
             while song:
-                if str(song.id) == str(song_id):
-                    song.title = title
+                if old_title in song.title.lower():
+                    song.title = new_title
                     song.duration = duration
                     if genre:
                         song.genre = genre
@@ -304,9 +293,9 @@ class PageAdmin(ctk.CTkFrame):
             self.refresh_admin_library(controller)
             self.clear_form()
             self.error_label.configure(
-                text=f"Lagu ID {song_id} berhasil diperbarui!", 
+                text=f"Lagu '{new_title}' berhasil diperbarui!", 
                 text_color=SPOTIFY_GREEN)
         else:
             self.error_label.configure(
-                text=f"Lagu dengan ID {song_id} tidak ditemukan!", 
+                text=f"Lagu '{old_title}' tidak ditemukan!", 
                 text_color="#FF6B6B")
