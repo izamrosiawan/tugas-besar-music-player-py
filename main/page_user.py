@@ -460,11 +460,12 @@ class PageUser(ctk.CTkFrame):
             line_number = int(index.split('.')[0]) - 1
             if 0 <= line_number < len(self.playlist_items):
                 playlist_data = self.playlist_items[line_number]
-                self.show_playlist_songs(playlist_data)
-        except:
-            pass
+                self.show_playlist_songs(controller, playlist_data)
+                print(f"[CLICK] Selected playlist: {playlist_data['genre']}")
+        except Exception as e:
+            print(f"[ERROR] on_playlist_click: {e}")
     
-    def show_playlist_songs(self, playlist_data):
+    def show_playlist_songs(self, controller, playlist_data):
         genre = playlist_data["genre"]
         songs = playlist_data["songs"]
         
@@ -480,18 +481,8 @@ class PageUser(ctk.CTkFrame):
         self.library_box.insert("end", f"🎵 {genre} Playlist\n\n", "header")
         
         for song in songs:
-            artist_name = "Unknown"
             # Cari artist name
-            from gui_main import App
-            art = self.master.master.player.library.artists_head
-            while art:
-                curr = art.songs_head
-                while curr:
-                    if curr.id == song.id:
-                        artist_name = art.artist_name
-                        break
-                    curr = curr.next
-                art = art.next
+            artist_name = self.get_artist_name(controller, song)
             
             album_info = f" • {song.album}" if song.album else ""
             text = f"{song.id}. {song.title} — {song.duration} ({artist_name}){album_info}\n"
@@ -499,7 +490,27 @@ class PageUser(ctk.CTkFrame):
             self.library_items.append(song)
         
         self.library_box.configure(state="disabled")
-        print(f"[PLAYLIST] Mode: {genre} ({len(songs)} lagu)")
+        print(f"[PLAYLIST] Mode: {genre} ({len(songs)} lagu, {len(self.library_items)} items loaded)")
+        
+        # Auto-play lagu pertama dari playlist
+        if self.library_items:
+            self.selected_index = 0
+            first_song = self.library_items[0]
+            artist_name = self.get_artist_name(controller, first_song)
+            
+            # Play lagu pertama
+            controller.player.play_song(first_song)
+            
+            # Update UI
+            self.current_label.configure(text=first_song.title)
+            self.artist_label.configure(text=artist_name)
+            self.seekbar.set(0)
+            self.time_current.configure(text="0:00")
+            self.time_total.configure(text=first_song.duration)
+            self.is_playing_state = True
+            self.play_pause_btn.configure(text="⏸")
+            
+            print(f"[AUTO-START] Playing: {first_song.title} ({artist_name})")
     
     def refresh_library(self, controller):
         # Reset mode playlist
@@ -712,6 +723,9 @@ class PageUser(ctk.CTkFrame):
         if not self.library_items:
             print("[NEXT] No songs in library")
             return
+        
+        mode = f"Playlist: {self.current_playlist_mode}" if self.current_playlist_mode else "All Songs"
+        print(f"[NEXT] Mode: {mode}, Total songs: {len(self.library_items)}")
             
         if self.selected_index is None:
             self.selected_index = 0
@@ -737,7 +751,7 @@ class PageUser(ctk.CTkFrame):
             self.time_total.configure(text=song.duration)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
-            print(f"[NEXT] Playing: {song.title} (index: {self.selected_index}/{len(self.library_items)-1})")
+            print(f"[NEXT] Playing: {song.title} ({artist_name}) [index: {self.selected_index}/{len(self.library_items)-1}]")
 
     def previous_song(self, controller):
         if self.selected_index is None: 
