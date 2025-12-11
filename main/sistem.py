@@ -117,6 +117,14 @@ class PlaylistManager:
             if p.name == name:
                 return p
         return None
+    
+    def add_to_playlist(self, playlist_name, song):
+        """Add song to specific playlist"""
+        playlist = self.get_playlist(playlist_name)
+        if playlist:
+            playlist.add_song(song)
+            return True
+        return False
 
 
 class PlayHistory:

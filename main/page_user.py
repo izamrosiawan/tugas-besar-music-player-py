@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox
+import time
 
 SPOTIFY_BLACK = "#121212"
 SPOTIFY_DARK_GRAY = "#181818"
@@ -105,13 +106,13 @@ class PageUser(ctk.CTkFrame):
                     font=("Arial", 13, "bold")).pack(fill="x", pady=5)
         
         # Add song to playlist
-        ctk.CTkLabel(action_content, text="ID Lagu:", font=("Arial", 12), 
+        ctk.CTkLabel(action_content, text="Nama Lagu:", font=("Arial", 12), 
                     text_color=SPOTIFY_LIGHT_GRAY).pack(anchor="w", pady=(20, 5))
-        self.song_id_entry = ctk.CTkEntry(action_content, height=35, corner_radius=10,
-                                        placeholder_text="Masukkan ID...",
+        self.song_name_entry = ctk.CTkEntry(action_content, height=35, corner_radius=10,
+                                        placeholder_text="Masukkan nama lagu...",
                                         fg_color=SPOTIFY_GRAY, border_color=SPOTIFY_GRAY, 
                                         text_color=SPOTIFY_WHITE)
-        self.song_id_entry.pack(fill="x", pady=(0, 10))
+        self.song_name_entry.pack(fill="x", pady=(0, 10))
         
         # Playlist selector
         ctk.CTkLabel(action_content, text="Pilih Playlist:", font=("Arial", 12), 
@@ -255,11 +256,10 @@ class PageUser(ctk.CTkFrame):
         messagebox.showinfo("Sukses", f"Playlist '{playlist_name}' berhasil dibuat!")
     
     def add_to_user_playlist(self, controller):
-        """Menambahkan lagu ke playlist user"""
-        try:
-            song_id = int(self.song_id_entry.get().strip())
-        except ValueError:
-            messagebox.showerror("Error", "ID lagu harus berupa angka!")
+        """Menambahkan lagu ke playlist user by nama"""
+        song_name = self.song_name_entry.get().strip().lower()
+        if not song_name:
+            messagebox.showerror("Error", "Masukkan nama lagu!")
             return
         
         playlist_name = self.user_playlist_dropdown.get()
@@ -267,32 +267,28 @@ class PageUser(ctk.CTkFrame):
             messagebox.showwarning("Pilih Playlist", "Pilih playlist tujuan terlebih dahulu!")
             return
         
-        # Cari lagu by ID
-        current_artist = controller.player.artist_manager.head
+        # Cari lagu by nama
+        art = controller.player.library.artists_head
         song_found = None
         
-        while current_artist:
-            if current_artist.albums_head:
-                album = current_artist.albums_head
-                while album:
-                    for song in album.songs:
-                        if song.id == song_id:
-                            song_found = song
-                            break
-                    if song_found:
-                        break
-                    album = album.next
+        while art:
+            song = art.songs_head
+            while song:
+                if song_name in song.title.lower():
+                    song_found = song
+                    break
+                song = song.next
             if song_found:
                 break
-            current_artist = current_artist.next
+            art = art.next
         
         if not song_found:
-            messagebox.showerror("Error", f"Lagu dengan ID {song_id} tidak ditemukan!")
+            messagebox.showerror("Error", f"Lagu '{song_name}' tidak ditemukan!")
             return
         
         # Add to playlist
         controller.player.playlist_manager.add_to_playlist(playlist_name, song_found)
-        self.song_id_entry.delete(0, 'end')
+        self.song_name_entry.delete(0, 'end')
         messagebox.showinfo("Sukses", f"Lagu '{song_found.title}' ditambahkan ke '{playlist_name}'!")
     
     def delete_user_playlist(self, controller):
@@ -480,12 +476,17 @@ class PageUser(ctk.CTkFrame):
         
         self.library_box.insert("end", f"🎵 {genre} Playlist\n\n", "header")
         
+        current_song_id = controller.player.current_song.id if controller.player.current_song else None
+        
         for song in songs:
             # Cari artist name
             artist_name = self.get_artist_name(controller, song)
             
+            # Tambah indicator jika lagu sedang playing
+            playing_indicator = "🔊 " if song.id == current_song_id else "   "
+            
             album_info = f" • {song.album}" if song.album else ""
-            text = f"{song.id}. {song.title} — {song.duration} ({artist_name}){album_info}\n"
+            text = f"{playing_indicator}{song.id}. {song.title} — {song.duration} ({artist_name}){album_info}\n"
             self.library_box.insert("end", text)
             self.library_items.append(song)
         
@@ -511,22 +512,63 @@ class PageUser(ctk.CTkFrame):
             self.play_pause_btn.configure(text="⏸")
             
             print(f"[AUTO-START] Playing: {first_song.title} ({artist_name})")
+            
+            # Update visual indicator
+            self.update_library_highlight(controller)
+    
+    def update_library_highlight(self, controller):
+        """Update icon playing di library box"""
+        if not controller.player.current_song:
+            return
+        
+        self.library_box.configure(state="normal")
+        content = self.library_box.get("1.0", "end")
+        lines = content.split("\n")
+        
+        current_song_id = controller.player.current_song.id
+        
+        new_content = []
+        for line in lines:
+            if line.strip():
+                # Hapus existing indicator
+                clean_line = line.replace("🔊 ", "   ")
+                
+                # Cek apakah ini lagu yang sedang playing
+                if f"{current_song_id}." in clean_line:
+                    # Tambah indicator
+                    clean_line = "🔊 " + clean_line[3:]
+                
+                new_content.append(clean_line)
+            else:
+                new_content.append(line)
+        
+        self.library_box.delete("1.0", "end")
+        self.library_box.insert("1.0", "\n".join(new_content))
+        self.library_box.configure(state="disabled")
     
     def refresh_library(self, controller):
         # Reset mode playlist
         self.current_playlist_mode = None
         self.selected_index = None
         
+        # Clear dan reset library box
         self.library_box.configure(state="normal")
         self.library_box.delete("1.0", "end")
         self.library_items = []
+        
+        current_song_id = controller.player.current_song.id if controller.player.current_song else None
+        
         art = controller.player.library.artists_head
         while art:
             song = art.songs_head
             while song:
                 album_info = f" • {song.album}" if song.album else ""
-                text = (f"{song.id}. {song.title} — {song.duration} "
-                    f"({art.artist_name}){album_info} [{song.genre}]\n")
+                
+                # Tambah indicator jika lagu sedang playing
+                playing_indicator = "🔊 " if song.id == current_song_id else "   "
+                
+                text = (f"{playing_indicator}{song.title} — {song.duration} "
+                    f"({art.artist_name}){album_info}\n")
                 self.library_box.insert("end", text)
                 self.library_items.append(song)
                 song = song.next
@@ -549,10 +591,9 @@ class PageUser(ctk.CTkFrame):
             song = art.songs_head
             while song:
                 if (keyword in song.title.lower() or 
-                    keyword in art.artist_name.lower() or 
-                    keyword in song.genre.lower()):
-                    text = (f"{song.id}. {song.title} — {song.duration} "
-                        f"({art.artist_name}) [{song.genre}]\n")
+                    keyword in art.artist_name.lower()):
+                    text = (f"{song.title} — {song.duration} "
+                        f"({art.artist_name})\n")
                     self.library_box.insert("end", text)
                     self.library_items.append(song)
                     found_count += 1
@@ -730,8 +771,31 @@ class PageUser(ctk.CTkFrame):
         if self.selected_index is None:
             self.selected_index = 0
         else:
-            # Loop kembali ke awal jika sudah di akhir
-            self.selected_index = (self.selected_index + 1) % len(self.library_items)
+            # Cari lagu berikutnya dari artist yang sama
+            current_song = self.library_items[self.selected_index]
+            current_artist = self.get_artist_name(controller, current_song)
+            
+            # Mulai dari index berikutnya, cari lagu dari artist yang sama
+            next_index = None
+            for i in range(self.selected_index + 1, len(self.library_items)):
+                song = self.library_items[i]
+                if self.get_artist_name(controller, song) == current_artist:
+                    next_index = i
+                    break
+            
+            # Jika tidak ada lagu lagi dari artist yang sama, cari dari awal
+            if next_index is None:
+                for i in range(0, self.selected_index):
+                    song = self.library_items[i]
+                    if self.get_artist_name(controller, song) == current_artist:
+                        next_index = i
+                        break
+            
+            # Jika masih tidak ada (hanya 1 lagu dari artist ini), loop ke lagu yang sama
+            if next_index is None:
+                next_index = self.selected_index
+            
+            self.selected_index = next_index
         
         if 0 <= self.selected_index < len(self.library_items):
             song = self.library_items[self.selected_index]
@@ -751,7 +815,15 @@ class PageUser(ctk.CTkFrame):
             self.time_total.configure(text=song.duration)
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
+            
+            # Reset position tracking
+            controller.player.start_time = time.time()
+            controller.player.paused_position = 0
+            
             print(f"[NEXT] Playing: {song.title} ({artist_name}) [index: {self.selected_index}/{len(self.library_items)-1}]")
+            
+            # Update visual indicator di library
+            self.update_library_highlight(controller)
 
     def previous_song(self, controller):
         if self.selected_index is None: 
