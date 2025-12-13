@@ -242,8 +242,9 @@ class PageUser(ctk.CTkFrame):
         controller.player.playlist_manager.create_playlist(playlist_name)
         self.refresh_playlist_list(controller)
         self.update_playlist_dropdown(controller)
+        self.user_playlist_dropdown.set(playlist_name)
         self.new_playlist_entry.delete(0, 'end')
-        messagebox.showinfo("Sukses", f"Playlist '{playlist_name}' berhasil dibuat!")
+        messagebox.showinfo("Sukses", f"Playlist '{playlist_name}' berhasil dibuat!\n\nSekarang Anda bisa tambah lagu ke playlist ini.")
     
     def add_to_user_playlist(self, controller):
         song_name = self.song_name_entry.get().strip().lower()
@@ -619,6 +620,7 @@ class PageUser(ctk.CTkFrame):
         self.library_box.configure(state="disabled")
     
     def refresh_library(self, controller):
+        import random
         self.current_playlist_mode = None
         self.selected_index = None
         
@@ -628,22 +630,30 @@ class PageUser(ctk.CTkFrame):
         
         current_song_id = controller.player.current_song.id if controller.player.current_song else None
         
+        all_songs = []
         art = controller.player.library.artists_head
         while art:
             song = art.songs_head
             while song:
-                album_info = f" • {song.album}" if song.album else ""
-                
-                playing_indicator = "🔊 " if song.id == current_song_id else "   "
-                
-                text = (f"{playing_indicator}{song.title} — {song.duration} "
-                    f"({art.artist_name}){album_info}\n")
-                self.library_box.insert("end", text)
-                self.library_items.append(song)
+                all_songs.append((song, art.artist_name))
                 song = song.next
             art = art.next
+        
+        random.seed(42)
+        random.shuffle(all_songs)
+        
+        for song, artist_name in all_songs:
+            album_info = f" • {song.album}" if song.album else ""
+            
+            playing_indicator = "🔊 " if song.id == current_song_id else "   "
+            
+            text = (f"{playing_indicator}{song.title} — {song.duration} "
+                f"({artist_name}){album_info}\n")
+            self.library_box.insert("end", text)
+            self.library_items.append(song)
+        
         self.library_box.configure(state="disabled")
-        print("[LIBRARY] Showing all songs")
+        print(f"[LIBRARY] Showing all songs ({len(all_songs)} total, shuffled)")
 
     def search_songs(self, controller):
         keyword = self.search_entry.get().strip().lower()
@@ -906,45 +916,6 @@ class PageUser(ctk.CTkFrame):
             self.is_playing_state = True
             self.play_pause_btn.configure(text="⏸")
             print(f"[PREV] Playing: {song.title}")
-
-    def create_new_playlist(self, controller):
-        from tkinter import simpledialog
-        name = simpledialog.askstring("Playlist Baru", "Nama playlist:")
-        if name:
-            controller.player.playlist_manager.create_playlist(name)
-            self.update_playlist_dropdown(controller)
-            self.playlist_dropdown.set(name)
-            controller.player.playlist_manager.active_playlist = (
-                controller.player.playlist_manager.get_playlist(name))
-            self.status_label.configure(
-                text=f"Playlist '{name}' dibuat!", 
-                text_color=SPOTIFY_GREEN)
-
-    def delete_current_playlist(self, controller):
-        current = self.playlist_dropdown.get()
-        if current == "My Playlist":
-            return self.status_label.configure(
-                text="Tidak bisa hapus playlist default!", 
-                text_color="#FF6B6B")
-        controller.player.playlist_manager.delete_playlist(current)
-        self.update_playlist_dropdown(controller)
-        self.playlist_dropdown.set("My Playlist")
-        controller.player.playlist_manager.active_playlist = (
-            controller.player.playlist_manager.get_playlist("My Playlist"))
-        self.refresh_playlist(controller)
-        self.status_label.configure(
-            text=f"Playlist '{current}' dihapus!", 
-            text_color=SPOTIFY_GREEN)
-
-    def switch_playlist(self, controller, name):
-        playlist = controller.player.playlist_manager.get_playlist(name)
-        if playlist:
-            controller.player.playlist_manager.active_playlist = playlist
-            self.refresh_playlist(controller)
-
-    def update_playlist_dropdown(self, controller):
-        names = [p.name for p in controller.player.playlist_manager.playlists]
-        self.playlist_dropdown.configure(values=names if names else ["My Playlist"])
     
     def on_seekbar_click(self, controller, event):
         self.seeking = True
