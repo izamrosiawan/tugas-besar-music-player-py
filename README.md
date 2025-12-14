@@ -1,7 +1,5 @@
 # CIC Music Player
 
-Aplikasi music player desktop yang dibuat dengan Python untuk Tugas Besar Struktur Data.
-
 ## Fitur Utama
 
 - **Play Music** - Putar lagu dari library
@@ -17,5 +15,3 @@ Aplikasi music player desktop yang dibuat dengan Python untuk Tugas Besar Strukt
 - **CustomTkinter** - untuk GUI yang modern
 - **Pygame** - untuk audio playback
 - **Struktur Data**: Linked List, Stack, Queue, Doubly Linked List
-
-*Dibuat dengan ❤️ untuk tugas besar*
